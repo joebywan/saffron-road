@@ -321,6 +321,31 @@ strips the PWA block out of it: a `file://` page has no origin to install to and
 beside it, so there is nothing to register and nothing to fetch. It makes no network
 requests at all, exactly as before.
 
+## The screenshots in the README
+
+```bash
+npm run screenshots
+```
+
+Rewrites `docs/screenshots/*.png`. It needs `firefox` on `PATH` and nothing
+else — no driver and no automation dependency.
+
+The positions are not mocked. It plays real games with the real engine and the
+real bots from a fixed seed, keeps the first position matching what the shot is
+meant to show, and falls back to the best near-miss if that position never came
+up — bots are stochastic, and a generator that only works on a lucky seed is one
+nobody reruns. Each state is then written into a scratch Firefox profile's
+localStorage by a temporary same-origin page, and a *second* Firefox run loads
+the app, which restores that saved game on boot exactly as it would on a phone.
+That second run is what is captured. Two runs, because localStorage persists in
+a profile between them and headless Firefox cannot be scripted mid-page.
+
+It forces `ui.systemUsesDarkTheme`, because the installed app is always dark
+and a fresh browser profile is not.
+
+Run it after any visible UI change. A screenshot of a UI that has since moved is
+worse than no screenshot.
+
 ## Where things live
 
 | Path | What it is |
@@ -343,6 +368,7 @@ requests at all, exactly as before.
 | `tools/serve.js` | The dev server behind `npm start`. |
 | `tools/bundle.js` | Inlines everything into one HTML file. |
 | `tools/silhouette.html` | The colour-blind check: all six cuts as flat black shapes, numbers knocked out, at pip size. `npm start` then `/tools/silhouette.html`. |
+| `tools/screenshots.mjs` | Rewrites the README's screenshots from real seeded games. `npm run screenshots`. |
 | `tools/icons.js` | Redraws `icons/` **and** the Android launcher icons from the app's own crocus mark. `npm run icons`. |
 | `android/` | The native Android wrapper: one activity, one WebView. `npm run apk`. |
 | `android/apk.sh` | Finds the SDK and a workable JDK, then runs `./gradlew assembleDebug`. |

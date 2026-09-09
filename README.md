@@ -9,6 +9,10 @@ get the trading companies to sign with you.
 Android 7.0 or newer. Other ways to play, and how to build it yourself, are in
 [INSTALL.md](INSTALL.md).
 
+| Starting a game | A few turns in | One point from winning |
+| --- | --- | --- |
+| ![The title screen: the app name over a crocus, with bot count, difficulty, Start game and How to play](docs/screenshots/title.png) | ![The board: three rows of cards for Routes, Warehouses and Caravans, with the goods you hold along the bottom](docs/screenshots/board.png) | ![A late position: fourteen points, three reserved cards, and two bots close behind](docs/screenshots/endgame.png) |
+
 ## It does not use the network
 
 The Android app does not hold the `INTERNET` permission. Not "does not phone
