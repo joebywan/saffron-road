@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    `android:isLightTheme` arrived in API 29, and it is not decoration here:
+    androidx.webkit's algorithmic darkening reads exactly this attribute to
+    decide what `prefers-color-scheme` the page is told. False means the app
+    declares itself dark, WebView reports dark, and styles.css's own dark
+    palette takes over instead of the WebView inverting the page by hand.
+
+    The contrast enforcement is off because the bars are deliberately
+    transparent over app-coloured strips; letting the system scrim them would
+    put a grey wash over the topbar colour.
+-->
+<resources>
+    <style name="Theme.SaffronRoad" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/app_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:isLightTheme">false</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+    </style>
+</resources>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="A trading game that runs entirely in the browser, with bot opponents.">
+<title>Saffron Road</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4.5H16L20.5 10L12 21.5L3.5 10Z' fill='%232b5fd9'/%3E%3Cpath d='M8 4.5H16L20.5 10H3.5Z' fill='%236f9bf5'/%3E%3C/svg%3E">
+
+<!-- pwa:begin — installable-app wiring. tools/bundle.js strips this block out
+     of index.single.html, which is opened straight off disk: there is no
+     origin there to install to and no sw.js sitting next to it. -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f7f9fc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#19202b" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- iOS home-screen app. Status bar style is "default" on purpose: the page
+     follows the system light/dark scheme, and "black-translucent" would put
+     white status-bar glyphs over the white app bar in light mode. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Saffron Road">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<!-- pwa:end -->
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to the board</a>
+
+<!-- No page header. The appbar inside the board carries the round, whose turn
+     it is and the menu; everything the old header's buttons did is a menu row. -->
+
+<main id="main" class="main">
+
+  <section id="setup" class="setup" aria-label="Game setup"></section>
+
+  <div id="game" class="game" hidden>
+    <div class="board">
+      <!-- The one slim bar at the top: the round, whose turn it is, the menu. -->
+      <div class="appbar">
+        <span class="appbar-round" id="round" aria-hidden="true"></span>
+        <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
+        <button type="button" class="iconbtn" id="btn-menu" data-act="open-sheet" data-sheet="menu"
+                data-fk="btn-menu" aria-haspopup="dialog" aria-label="Game menu">
+          <span aria-hidden="true">⋯</span>
+        </button>
+      </div>
+
+      <!-- The opponents as one tappable strip; tap a seat for the full panel. -->
+      <div id="oppstrip" class="oppstrip"></div>
+
+      <section class="sec sec--companys" aria-label="Company tiles">
+        <h2 class="sec-title">Companies <span class="sec-note">3 points each, claimed automatically</span></h2>
+        <div id="companies"></div>
+      </section>
+
+      <section class="sec sec--tiers" aria-label="Development cards">
+        <h2 class="sec-title">Development cards <span class="sec-note">costs as printed; dimmed where your cards cover them</span></h2>
+        <div id="tiers" class="tiers"></div>
+      </section>
+
+      <!-- Your own tokens, discounts and reserved cards, always on. -->
+      <div id="you" class="you"></div>
+
+      <section class="sec sec--bank" aria-label="Bank">
+        <div id="bank"></div>
+        <div id="takebar" class="takebar" aria-label="Turn actions"></div>
+      </section>
+    </div>
+
+    <!-- OFF SCREEN, AND DELIBERATELY STILL RENDERED. This is the aria-live
+         region that narrates the bots' moves; the Move log sheet is the
+         visible way in. Clipped rather than removed, because a region that is
+         not in the DOM announces nothing. -->
+    <aside class="side" aria-label="Move log">
+      <ol id="log" class="log"></ol>
+    </aside>
+  </div>
+
+</main>
+
+<!-- "A new version is cached." Filled in by render.js only when the service
+     worker says so, and never during someone's turn without their say-so. -->
+<div id="update" class="updatebar" hidden></div>
+
+<!-- THE BEAT. The bots' turns, in front of the board instead of beside it.
+     Opens once when the bots start and closes once when they finish, however
+     many of them there are and whatever the pacing: the reports rotate inside
+     this one popup, so the backdrop never blinks. -->
+<div id="beat" class="beat" hidden></div>
+
+<div id="sheet" class="sheet" hidden></div>
+<div id="overlay" class="overlay" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="src/ui/app.js"></script>
+</body>
+</html>

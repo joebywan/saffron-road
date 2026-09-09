@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Always dark, never DayNight. The web app follows the system scheme in a
+    browser, but as an installed app it is one thing with one look, and the
+    system bars have to match a palette that does not move underneath them.
+
+    Theme.Material is the platform's own dark theme, so this needs no
+    AppCompat and pulls in no widget library — there is exactly one View in
+    this app and it is a WebView.
+-->
+<resources>
+    <style name="Theme.SaffronRoad" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/app_bg</item>
+        <!-- Edge to edge: the activity insets its own content, so the bars
+             are transparent and the app paints underneath them. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

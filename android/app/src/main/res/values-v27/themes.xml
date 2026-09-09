@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Display cutouts arrived in API 27. `shortEdges` lets the window extend
+    into the notch; MainActivity then insets the WebView back out of it, which
+    is what keeps the header readable while the bar area stays app-coloured
+    rather than letterboxed black.
+-->
+<resources>
+    <style name="Theme.SaffronRoad" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/app_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

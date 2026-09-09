@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The dark half of the palette in styles.css, and nowhere else. If those
+    values move, move these: the window background is what the user stares at
+    for the fraction of a second before the WebView paints, and a white flash
+    there is the tell that an app is a web view.
+
+    (An XML comment may not contain two hyphens in a row, so the CSS custom
+    properties are named without their leading dashes below.)
+-->
+<resources>
+    <!-- bg: the board behind everything -->
+    <color name="app_bg">#0E1219</color>
+    <!-- bg-panel: the topbar -->
+    <color name="app_panel">#19202B</color>
+    <!-- The icon backdrop's low end, matching tools/icons.js -->
+    <color name="app_ink">#0B0F15</color>
+</resources>

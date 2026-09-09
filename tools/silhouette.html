@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resource silhouette check</title>
+<!--
+  THE COLOUR-BLIND FALLBACK, ON TRIAL.
+
+  Colour is never the only cue in this game. It used to be backed by two
+  things: the six good CUTS have deliberately different outlines, and each
+  token carried a letter glyph. The letter is gone — the count rides on the
+  token instead — so the silhouette is now carrying that job alone, and a
+  number sitting in the middle of a shape is exactly the thing that can eat
+  the outline that carries the meaning.
+
+  This page is that check, and it is deliberately harsher than the real UI:
+  flat black on white, no shading, no rim, no colour, and the digits knocked
+  clean OUT of the shape (mask, not overlay), at pip size and at 96px.
+
+  Open it with `npm start` and go to /tools/silhouette.html. Six shapes, one
+  and two digits each. If any two rows stop being tellable apart at 22px, the
+  number box for that cut in TOKEN_NUMBER (src/ui/tokens.js) is too big.
+-->
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { background: #fff; color: #000; padding: 20px; font: 14px system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p.lede { margin: 0 0 18px; max-width: 62ch; color: #444; font-size: 13px; }
+  table { border-collapse: collapse; }
+  th, td { padding: 8px 12px; text-align: center; vertical-align: middle; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #555; font-weight: 700; }
+  tbody tr + tr { border-top: 1px solid #ddd; }
+  td.name { text-align: left; font-weight: 700; font-size: 13px; }
+  /* Pure black on pure white. The stroke that is the contrast halo in the real
+     UI is what carves the digit out of the shape here. */
+  .sil svg { display: block; fill: #000; }
+  .sil { display: inline-block; }
+  .token-num { stroke-width: 1.7; }
+</style>
+</head>
+<body>
+<h1>Resource silhouette check — numbers on, colour off</h1>
+<p class="lede">
+  Every token as a flat black silhouette with its count knocked out of it, at the
+  sizes the app actually uses. The question is only ever: at 22px, can you tell
+  any two rows apart without reading the labels?
+</p>
+<div id="out"></div>
+
+<script type="module">
+import { tokenSilhouetteMarkup } from '../src/ui/tokens.js';
+import { TOKEN_LABEL, TOKENS } from '../src/contract.js';
+
+/* The pip sizes the app actually draws a counted token at — 20 on the company
+   strip, 22 on a card cost, 26 in the holdings rail, 40-46 in the bank — plus
+   one large one to show the cut with nothing in the way. */
+const SIZES = [20, 22, 26, 46, 96];
+const COUNTS = [null, 1, 4, 7, 12];
+/* The halo stroke is a stylesheet rule in the app; an SVG rasterised on its
+   own carries no stylesheet, so the same declaration is embedded per image. */
+const NUM_CSS = '<style>.token-num{font-family:ui-sans-serif,system-ui,sans-serif;' +
+  'font-weight:800;paint-order:stroke;stroke-width:1.7;stroke-linejoin:round;' +
+  'stroke-linecap:round}</style>';
+
+const out = document.getElementById('out');
+
+function svgFor(token, size, count) {
+  const raw = tokenSilhouetteMarkup(token, `width="${size}" height="${size}"`, count);
+  return raw.replace('>', ` xmlns="http://www.w3.org/2000/svg">${NUM_CSS}`);
+}
+
+function table(caption, cell) {
+  const h = document.createElement('h2');
+  h.textContent = caption;
+  out.append(h);
+  const t = document.createElement('table');
+  const thead = document.createElement('thead');
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Token</th>' + COUNTS.map((c) => `<th>${c === null ? 'none' : c}</th>`).join('');
+  thead.append(head);
+  t.append(thead);
+  const body = document.createElement('tbody');
+  for (const token of TOKENS) {
+    const tr = document.createElement('tr');
+    const name = document.createElement('td');
+    name.className = 'name';
+    name.textContent = TOKEN_LABEL[token];
+    tr.append(name);
+    for (const c of COUNTS) {
+      const td = document.createElement('td');
+      td.append(cell(token, c));
+      tr.append(td);
+    }
+    body.append(tr);
+  }
+  t.append(body);
+  out.append(t);
+}
+
+/*
+ * THE ONE THAT MATTERS: pip size, magnified WITHOUT smoothing.
+ *
+ * A vector redraw at 96px flatters the artwork — it shows the shape that was
+ * intended, not the shape a phone actually puts on the glass. So each token is
+ * rasterised once at its real pip size and then blown up nearest-neighbour, so
+ * what you are looking at is literally the 22 by 22 pixels the player gets.
+ */
+function magnified(token, count, size, zoom) {
+  const cv = document.createElement('canvas');
+  cv.width = size * zoom;
+  cv.height = size * zoom;
+  cv.style.cssText = `width:${size * zoom}px;height:${size * zoom}px;` +
+    'background:#fff;border:1px solid #e3e3e3';
+  const ctx = cv.getContext('2d');
+  const img = new Image();
+  img.onload = () => {
+    const small = document.createElement('canvas');
+    small.width = size;
+    small.height = size;
+    small.getContext('2d').drawImage(img, 0, 0, size, size);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(small, 0, 0, size, size, 0, 0, size * zoom, size * zoom);
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgFor(token, size, count));
+  return cv;
+}
+
+table('22px, rasterised then magnified 6x — the actual pixels', (token, c) => magnified(token, c, 22, 6));
+table('20px — the smallest counted token in the app — magnified 6x', (token, c) => magnified(token, c, 20, 6));
+
+/* Straight vector renders, at the sizes the app uses. */
+for (const size of SIZES) {
+  table(`${size}px — as drawn`, (token, c) => {
+    const box = document.createElement('span');
+    box.className = 'sil';
+    box.innerHTML = svgFor(token, size, c);
+    return box;
+  });
+}
+</script>
+</body>
+</html>

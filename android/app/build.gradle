@@ -1,0 +1,433 @@
+plugins {
+    id 'com.android.application'
+}
+
+/*
+ * THE WEB APP IS NOT VENDORED HERE.
+ *
+ * There is exactly one copy of index.html, styles.css, src/**, sw.js, the
+ * manifest and the icons, and it lives at the repo root. `copyWebAssets`
+ * below syncs them into a generated directory that is registered as an extra
+ * assets source set, so every APK is built from whatever the repo root says
+ * right now. Nothing under app/src/main/assets/ is hand-maintained — the
+ * directory does not exist, deliberately, because a second copy of the app is
+ * a second copy to forget to update.
+ *
+ * It is a Sync, not a Copy: deleting a module at the repo root deletes it
+ * from the next APK instead of leaving a stale one behind.
+ */
+def webRoot = rootProject.projectDir.parentFile
+def webAssetsDir = layout.buildDirectory.dir('generated/webAssets').get().asFile
+
+def copyWebAssets = tasks.register('copyWebAssets', Sync) {
+    group = 'build'
+    description = 'Syncs the web app from the repo root into the APK assets.'
+
+    from(webRoot) {
+        include 'index.html'
+        include 'styles.css'
+        include 'manifest.webmanifest'
+        include 'sw.js'
+        include 'src/**/*.js'
+        include 'icons/*.png'
+
+        // Never walk these, whatever the includes say.
+        exclude '.git/**'
+        exclude 'node_modules/**'
+        exclude 'android/**'
+    }
+    into webAssetsDir
+
+    doLast {
+        logger.lifecycle('copyWebAssets: web app synced into the APK assets')
+    }
+}
+
+/*
+ * THE SERVICE WORKER'S VERSION.
+ *
+ * sw.js is committed with a `__APP_VERSION__` placeholder and this task is
+ * what turns it into something real inside the APK. It has to be here, and not
+ * only in the release workflow, because the APK is its own delivery path: a
+ * version that moves on the web but not in the APK reproduces the original bug
+ * for Android alone, and Android is where it bit — the WebView's caches survive
+ * reinstalling the app, so a player reinstalled twice and kept running the
+ * JavaScript from the first build they ever opened.
+ *
+ * Deliberately NOT node. tools/version.js does exactly this for the web and
+ * Linux paths, but Android Studio can build without node on PATH, and the
+ * existing checkWebAssets task SKIPS itself in that case. A skipped version
+ * stamp is invisible and produces precisely the bug being fixed, so this is
+ * plain Groovy and always runs. It reproduces tools/version.js's hash exactly:
+ * <base>-<8 hex of sha256 over the normalised sw.js and every precached file>.
+ *
+ * It only ever replaces the PLACEHOLDER. A checkout the release workflow has
+ * already stamped with the tag is left alone, so the APK and the web build
+ * report the same version.
+ */
+def SW_PLACEHOLDER = '__APP_VERSION__'
+def SW_DECL = ~/(const INJECTED_VERSION = ')([^']*)(')/
+
+/* ------------------------------------------------------------------------
+ * THE APP'S OWN VERSION, AND WHY IT IS NOT TYPED HERE EITHER.
+ *
+ * This file used to say `versionCode 1` / `versionName '1.0.0'`, and nothing
+ * anywhere overrode them. So v1.0.0, v1.1.0, v1.2.0 and v1.2.1 all shipped as
+ * versionCode 1, and Android does not treat an equal versionCode installed
+ * over an existing app as an upgrade of its assets — the player installed
+ * every new release on top of the old one and kept the OLD APK's web app.
+ * Clearing storage did not help (the assets, not the caches, were stale);
+ * only uninstall-then-install did.
+ *
+ * That is the same class of bug as the service worker's frozen `VERSION`, one
+ * layer further out, and it compounds with it: one stops new bytes arriving,
+ * the other stops new bytes running. Both are fixed by deriving the version
+ * from the release rather than remembering to type it.
+ *
+ *   -PappVersion=1.2.1   what .github/workflows/release.yml passes (a leading
+ *                        'v' is fine, it is stripped)
+ *   nearest git tag      what a local build off a tagged checkout gets, with
+ *                        '-dev' appended when HEAD is not that tag itself
+ *   0.0.0-dev            no property and no git: `npm run apk` still works
+ *
+ * versionCode is major*10000 + minor*100 + patch, so 1.2.1 -> 10201: it rises
+ * with every release, which is the property Android actually enforces.
+ * ------------------------------------------------------------------------ */
+
+/** `git ...` in the repo root, or null if git has nothing to say. */
+def git = { List<String> gitArgs ->
+    try {
+        def p = new ProcessBuilder(['git'] + gitArgs).directory(webRoot)
+                .redirectErrorStream(true).start()
+        def out = p.inputStream.text.trim()
+        return (p.waitFor() == 0 && out) ? out : null
+    } catch (Exception ignored) {
+        return null // no git binary, or a source archive with no .git
+    }
+}
+
+def rawVersion = project.hasProperty('appVersion') ? project.property('appVersion').toString().trim() : null
+def fromTag = false
+if (!rawVersion) {
+    def nearest = git(['describe', '--tags', '--abbrev=0'])
+    if (nearest) {
+        // On the tag itself this is a release build; past it, it is a dev build
+        // of something newer, and saying so beats claiming to be the release.
+        def exact = git(['describe', '--tags', '--exact-match'])
+        rawVersion = exact ? nearest : "${nearest}-dev"
+        fromTag = true
+    }
+}
+if (!rawVersion) rawVersion = '0.0.0-dev'
+
+def appVersionName = rawVersion.toString().replaceFirst(/^v/, '')
+
+/** major*10000 + minor*100 + patch, from the leading x.y.z of the name. */
+def appVersionCode = {
+    def m = (appVersionName =~ /^(\d+)\.(\d+)\.(\d+)/)
+    if (!m.find()) return 1
+    def code = m.group(1).toInteger() * 10000 + m.group(2).toInteger() * 100 + m.group(3).toInteger()
+    // Android requires a positive integer, and 0.0.0-dev must still install.
+    return Math.max(1, code)
+}()
+
+logger.lifecycle("saffron-road: versionName ${appVersionName}, versionCode ${appVersionCode}" +
+        (project.hasProperty('appVersion') ? ' (-PappVersion)' : fromTag ? ' (git tag)' : ' (no tag - local default)'))
+
+/**
+ * What the service worker's version is built on. Same derivation, so an APK's
+ * app version and its worker version cannot disagree; `git describe` is
+ * preferred for an untagged local build only because it also says how far past
+ * the tag the tree is, which is useful when debugging a build in someone's hand.
+ */
+def swVersionBase = {
+    if (project.hasProperty('appVersion')) return "v${appVersionName}".toString()
+    return git(['describe', '--tags', '--always', '--dirty']) ?: "v${appVersionName}".toString()
+}
+
+def stampServiceWorker = tasks.register('stampServiceWorker') {
+    group = 'build'
+    description = 'Stamps a real, per-build version into the APK copy of sw.js.'
+    dependsOn copyWebAssets
+    // Never up to date: copyWebAssets is a Sync, so editing only src/ui/render.js
+    // leaves an untouched sw.js in the output — and an untouched sw.js is a
+    // frozen cache name. The stamp is recomputed from the shipped bytes every
+    // time, which is what makes any change to the app change the version.
+    outputs.upToDateWhen { false }
+
+    doLast {
+        def source = new File(webRoot, 'sw.js')
+        def target = new File(webAssetsDir, 'sw.js')
+        if (!source.exists()) {
+            throw new GradleException("no sw.js at ${source} - the offline app cannot be built without it")
+        }
+        def src = source.getText('UTF-8')
+        def matcher = (src =~ SW_DECL)
+        if (!matcher.find()) {
+            throw new GradleException(
+                    "sw.js has no `const INJECTED_VERSION = '...'` to stamp. It is rewritten by " +
+                    "tools/version.js and by this task; renaming it means updating both.")
+        }
+        def current = matcher.group(2)
+        if (current != SW_PLACEHOLDER) {
+            // A LEFTOVER PLACEHOLDER IS NOT A VERSION. Anything of the shape
+            // __LIKE_THIS__ that is not the one this file is looking for means
+            // the two names have drifted apart — sw.js renamed its placeholder
+            // and SW_PLACEHOLDER above did not, or the reverse. The old code
+            // read that as "already stamped" and shipped it untouched, which
+            // is a worker whose cache name never changes: the exact bug the
+            // whole injection mechanism exists to prevent, restored silently
+            // by a rename. It happened. Hence a build failure, not a log line.
+            if (current ==~ /^__[A-Z0-9_]+__$/) {
+                throw new GradleException(
+                        "sw.js carries the placeholder '${current}', but this build stamps " +
+                        "'${SW_PLACEHOLDER}'. The two have drifted, so the service worker would " +
+                        "ship UNSTAMPED and never update. Make them match (sw.js, " +
+                        "tools/version.js and SW_PLACEHOLDER here all name the same string).")
+            }
+            target.setText(src, 'UTF-8')
+            logger.lifecycle("stampServiceWorker: sw.js already stamped ${current} - left alone")
+            return
+        }
+
+        // The hash covers exactly what ships: sw.js with its version normalised
+        // back to the placeholder (so stamping cannot change its own hash) and
+        // every file in the worker's own precache list, from the copied assets.
+        def digest = java.security.MessageDigest.getInstance('SHA-256')
+        def normalised = src.replaceFirst(SW_DECL) { all, a, v, b -> "${a}${SW_PLACEHOLDER}${b}" }
+        digest.update('sw.js\u0000'.getBytes('UTF-8'))
+        digest.update(normalised.getBytes('UTF-8'))
+
+        def block = (src =~ /(?s)const SHELL_FILES = \[(.*?)\n\];/)
+        if (!block.find()) throw new GradleException('sw.js: could not find the SHELL_FILES array')
+        def entries = (block.group(1) =~ /'([^']+)'/).collect { it[1] }
+        if (entries.size() < 5) {
+            throw new GradleException("sw.js: SHELL_FILES looks wrong (${entries.size()} entries)")
+        }
+        def missing = []
+        entries.each { entry ->
+            if (entry == './') return   // the directory, served as index.html
+            def rel = entry.startsWith('./') ? entry.substring(2) : entry
+            digest.update("\u0000${rel}\u0000".getBytes('UTF-8'))
+            def f = new File(webAssetsDir, rel)
+            if (f.isFile()) {
+                digest.update(f.bytes)
+            } else {
+                // Absent has to hash differently from present, not be skipped.
+                digest.update('<absent>'.getBytes('UTF-8'))
+                missing << rel
+            }
+        }
+        def hash = digest.digest().encodeHex().toString().substring(0, 8)
+        def version = "${swVersionBase()}-${hash}".replaceAll(/[^A-Za-z0-9._+-]/, '-')
+
+        target.setText(src.replaceFirst(SW_DECL) { all, a, v, b -> "${a}${version}${b}" }, 'UTF-8')
+        logger.lifecycle("stampServiceWorker: sw.js version ${version}")
+        if (missing) logger.warn("stampServiceWorker: not in the assets: ${missing.join(', ')}")
+    }
+}
+
+/*
+ * The include list above is an ALLOWLIST, which makes it quietly dangerous: add
+ * a file to the web app, forget to list it here, and the app keeps working in a
+ * browser while 404-ing inside the APK. This check walks the real module graph
+ * plus index.html, the service worker's precache list and the manifest icons,
+ * and fails the build if anything the app needs did not get copied.
+ *
+ * Skipped when node is unavailable rather than blocking the build on it.
+ */
+def checkWebAssets = tasks.register('checkWebAssets', Exec) {
+    group = 'verification'
+    description = 'Fails the build if the web app needs a file the copy list misses.'
+    dependsOn copyWebAssets, stampServiceWorker
+
+    commandLine 'node', new File(webRoot, 'tools/check-assets.js').absolutePath, webAssetsDir.absolutePath
+
+    doFirst {
+        // If node genuinely isn't on PATH, skip rather than fail the build.
+        def probe = new ProcessBuilder('sh', '-c', 'command -v node')
+                .redirectErrorStream(true).start()
+        if (probe.waitFor() != 0) {
+            logger.lifecycle('checkWebAssets: node not found, skipping the asset completeness check')
+            throw new StopExecutionException()
+        }
+    }
+}
+
+android {
+    /**
+     * THE APP'S IDENTITY TO ANDROID — the same role the signing key plays.
+     * An install whose applicationId differs from the installed one is a
+     * DIFFERENT app: it lands alongside rather than upgrading, and the old
+     * one's data is stranded.
+     *
+     * Changing it is not a rename, it is a fork: the old install stays where
+     * it is, holding data nothing can reach any more. Treat this string as
+     * fixed for the life of the app.
+     */
+    namespace 'dev.local.saffronroad'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'dev.local.saffronroad'
+        minSdk 24
+        targetSdk 36
+        // Derived above from -PappVersion or the git tag. NEVER hardcode these:
+        // a versionCode that does not rise is a release Android will not treat
+        // as an upgrade, and that is what stranded people on v1.0.0's assets.
+        versionCode appVersionCode
+        versionName appVersionName
+    }
+
+    sourceSets {
+        main {
+            assets.srcDir(webAssetsDir)
+        }
+    }
+
+    /* ------------------------------------------------------------------
+     * THE SIGNING KEY IS THE APP'S IDENTITY, AND IT HAS TO BE THE SAME ONE
+     * EVERY TIME.
+     *
+     * Android refuses to install an APK over one signed by a different key,
+     * and the installer reports that as the bare string "The app wasn't
+     * installed" with no reason attached. That is what people saw: every
+     * release had to be uninstalled before the next would go on, and doing so
+     * threw away the app's storage each time.
+     *
+     * The cause was that this file declared no signingConfig at all, so
+     * `assembleDebug` fell back to ~/.android/debug.keystore — WHICH GRADLE
+     * GENERATES IF IT IS MISSING. On a laptop that file persists and the key
+     * is stable by accident. On an ephemeral CI runner there is no such file,
+     * so every single release build minted a brand new random key. v1.3.0,
+     * v1.4.0, v1.5.1 and v1.6.0 went out under four different keys, and no
+     * two of them could ever install over each other.
+     *
+     * versionCode was a real bug and is fixed above, but it was never enough:
+     * the signature is checked FIRST, so a rising versionCode on a re-keyed
+     * APK still fails, which is why the release workflow's versionCode check
+     * passed while the install did not.
+     *
+     * The key now comes from the environment (release.yml restores it from
+     * repo secrets). WITHOUT it, this falls back to the old behaviour on
+     * purpose: a local `npm run apk` should keep working with the laptop's own
+     * debug key, which is stable for that laptop, and nobody building a fork
+     * needs our key to get an APK out.
+     * ------------------------------------------------------------------ */
+    // Named ks* deliberately. `keyAlias` and `keyPassword` are properties of
+    // SigningConfig itself, so locals with those names are shadowed inside the
+    // block below and the config silently reads itself instead of the env.
+    def ksPath = System.getenv('SAFFRON_KEYSTORE')
+    def ksStorePassword = System.getenv('SAFFRON_KEYSTORE_PASSWORD')
+    def ksAlias = System.getenv('SAFFRON_KEY_ALIAS')
+    def ksKeyPassword = System.getenv('SAFFRON_KEY_PASSWORD')
+    // Resolved OUT HERE, not inside the closure below: file() is a Project
+    // method and the signingConfigs closure delegates to a container, so
+    // resolving it at the point of use is one more thing that can only be
+    // found out at release time. This branch is not exercised by CI - a PR
+    // build has no key and takes the fallback - so what it does contain is
+    // kept to plain assignments.
+    def ksFile = ksPath ? file(ksPath) : null
+    def haveReleaseKey = ksPath && ksStorePassword && ksAlias && ksKeyPassword &&
+            ksFile != null && ksFile.exists()
+
+    signingConfigs {
+        if (haveReleaseKey) {
+            sideload {
+                storeFile ksFile
+                storePassword ksStorePassword
+                keyAlias ksAlias
+                keyPassword ksKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // Local builds and `npm run apk`. Signed with the release key when
+            // one is present so a hand-built APK can still be installed over a
+            // released one; debuggable, as a debug build should be.
+            if (haveReleaseKey) {
+                signingConfig signingConfigs.sideload
+            }
+        }
+        release {
+            /*
+             * WHAT SHIPS. This used to be assembleDebug, and that was a bug
+             * with two faces.
+             *
+             * A debug build carries android:debuggable="true", which every
+             * release from v1.0.0 to v2.2.0 was published with. That means
+             * anyone who can reach the device over adb can attach to the
+             * process and read its storage — on an app whose whole pitch is
+             * that nothing leaves the device. It is also the profile Play
+             * Protect scrutinises hardest, and installing an update over an
+             * existing install is the moment it asks to scan.
+             *
+             * minifyEnabled stays false: there is no reflection, no JNI and no
+             * serialisation to keep safe, so shrinking would buy a rounding
+             * error on an APK this size and cost a class of failure that only
+             * appears in the shipped build.
+             */
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (haveReleaseKey) {
+                signingConfig signingConfigs.sideload
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // The web assets are already compressed where it matters (png, webp) and
+    // the .js is what the WebView reads directly; leaving the rest deflated
+    // keeps the APK small at no measurable cost on a 2016-era phone.
+    androidResources {
+        noCompress 'webp', 'png'
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+// preBuild runs ahead of every asset merge, so this is enough to guarantee
+// ordering; the explicit MergeSourceSetFolders hook is belt and braces for
+// anyone who wires up a new variant later.
+tasks.named('preBuild').configure { dependsOn(copyWebAssets, stampServiceWorker) }
+tasks.withType(com.android.build.gradle.tasks.MergeSourceSetFolders).configureEach {
+    dependsOn(copyWebAssets, stampServiceWorker)
+}
+
+dependencies {
+    /*
+     * No Kotlin is compiled here — this is the transitive stdlib, and the BOM
+     * is load-bearing rather than tidy-up.
+     *
+     * androidx.activity pulls androidx.lifecycle, which pulls
+     * kotlinx-coroutines-android 1.6.4, which still asks for the old split
+     * kotlin-stdlib-jdk7/jdk8 artifacts at 1.6.21. Something else in the
+     * graph raises kotlin-stdlib itself to 1.8.22, and from 1.8 onwards the
+     * jdk7/jdk8 classes were folded INTO kotlin-stdlib — so the two jars
+     * collide and `checkDebugDuplicateClasses` fails the build outright.
+     * The BOM drags jdk7/jdk8 up to 1.8.22 too, where they are empty shims
+     * that only depend on the main stdlib.
+     */
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:2.4.10')
+
+    // WebViewAssetLoader + ServiceWorkerControllerCompat + the dark-mode
+    // settings shim. This is the whole reason androidx.webkit is here.
+    implementation 'androidx.webkit:webkit:1.17.0'
+    // ComponentActivity, for OnBackPressedDispatcher — the only back handling
+    // that still fires once predictive back is on by default (targetSdk 36).
+    implementation 'androidx.activity:activity:1.13.0'
+    // ViewCompat/WindowInsetsCompat, for the cutout and system-bar insets.
+    implementation 'androidx.core:core:1.18.0'
+}
+
+// Every variant's asset merge waits on the check, so no build path skips it.
+tasks.matching { it.name.startsWith('merge') && it.name.endsWith('Assets') }
+        .configureEach { dependsOn checkWebAssets }

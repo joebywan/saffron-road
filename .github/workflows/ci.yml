@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Neither job writes anything. The repo default is already read-only, but a
+# default is a thing that changes without this file changing.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Nothing here pushes with git; release.yml publishes through the gh
+          # CLI with an explicitly scoped GH_TOKEN. Left at the default, every
+          # step after this one would inherit push credentials in .git/config -
+          # including a Gradle build running third-party plugin code.
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '20'
+
+      # No dependencies to install - the whole point of the project.
+      - name: Tests
+        run: npm test
+
+      - name: Card and noble data invariants
+        run: node src/data/verify.js
+
+      # The service worker's version placeholder is the thing every delivery
+      # path rewrites. If it is renamed, committed already-stamped, or loses
+      # its un-injected 'dev' fallback, every injector becomes a silent no-op
+      # and installed apps quietly stop updating - exactly the failure this
+      # replaced. It is invisible at runtime, so it gets a check.
+      - name: Service worker version placeholder
+        run: node tools/version.js --check
+
+      - name: Single-file bundle builds
+        run: npm run bundle
+
+      - name: Bundle is self-contained
+        run: |
+          if grep -qE '(src|href)="(https?:)?//' index.single.html; then
+            echo "index.single.html references an external host" >&2
+            exit 1
+          fi
+          echo "no external references"
+
+  # The APK is only PUBLISHED from a tag, but it is built from the web app, and
+  # the thing that breaks it is an ordinary change to that - a new module the
+  # asset copy list does not carry, say. Building it on every pull request is
+  # what turns that from a release-day surprise into a red check.
+  apk:
+    name: Android APK builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # BEFORE the JDK, and that ordering is load-bearing. The build's
+      # checkWebAssets task - the one that catches a module added to the web
+      # app but missing from the APK's copy allowlist - probes for node and
+      # SKIPS ITSELF when it is absent rather than failing the build. Set up
+      # Java first and node is still missing when Gradle configures, so the
+      # check quietly no-ops and this job proves less than it appears to.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '20'
+
+      # 17, for the same reason release.yml pins it: every Android plugin from
+      # 8.0 onward wants a 17 JDK, and it is still the minimum at AGP 9.4.
+      # Gradle 9.7's own ceiling moved when the wrapper did; the plugin's
+      # floor did not, and the floor is what pins this.
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
+
+      # No -PappVersion and no tags in the checkout, so the build falls back to
+      # 0.0.0-dev. That is the point: this asks whether the build works, and
+      # the version derivation is release.yml's problem.
+      # assembleRELEASE, because that is what ships. Building the debug
+      # variant here while releases were built from a different one is how a
+      # debuggable APK went out fifteen times without a red check.
+      # Unsigned, because CI has no key — the signature is release.yml's
+      # problem and is asserted there.
+      - name: Assemble
+        working-directory: android
+        run: ./gradlew --no-daemon assembleRelease
+
+      # A build can succeed and still ship an empty app if the asset sync
+      # silently copies nothing - so count what actually landed in the binary.
+      - name: The APK contains the web app
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -f "$APK" || { echo "no APK was produced" >&2; exit 1; }
+          MODULES=$(unzip -l "$APK" | grep -c 'assets/src/.*\.js' || true)
+          echo "$MODULES web modules in the APK"
+          test "$MODULES" -gt 10 || { echo "suspiciously few modules bundled" >&2; exit 1; }

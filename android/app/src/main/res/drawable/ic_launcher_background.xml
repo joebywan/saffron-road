@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The adaptive icon's background layer: the same top-to-bottom lift from the
+    panel colour down to the ink below the board that tools/icons.js bakes
+    into the web icons. A shape rather than a PNG so the launcher can scale
+    and parallax it without resampling. Android measures gradient angles
+    anticlockwise from left-to-right, so 270 is top-to-bottom.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:endColor="@color/app_ink"
+        android:startColor="@color/app_panel"
+        android:type="linear" />
+</shape>

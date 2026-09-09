@@ -1,0 +1,34 @@
+# A BACKSTOP, not a feature. Every illustration in this game is original work
+# drawn in src/ui/tokens.js and tools/icons.js, and nothing in src/ or the
+# build looks in here. The rule exists so that dropping third-party images into
+# this directory — from a backup, another checkout, anywhere — cannot put
+# material this project does not own into a public repo by way of a stray
+# `git add -A`. It costs one line and it guards a very bad afternoon.
+assets/official/
+
+# Build output of `npm run bundle`.
+index.single.html
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Editor / OS
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Android build. `android/apk.sh` regenerates all of it. local.properties points
+# at one machine's SDK; the wrapper jar and scripts under android/gradle/ ARE
+# committed, on purpose.
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.aab
+
+# No signing material, ever.
+*.jks
+*.keystore

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    THE SPLASH SCREEN, on API 31 and up.
+
+    Android 12 shows one whether you configure it or not: unconfigured, it puts
+    the launcher icon on the theme's windowBackground and looks like nobody
+    chose it. Configured, it is the same crocus on the same dark ground the app
+    itself opens on, so the hand-off to the WebView is invisible rather than a
+    change of scene.
+
+    windowSplashScreenAnimatedIcon takes the adaptive FOREGROUND layer — the
+    mark on a transparent field — because the platform draws its own circular
+    background behind it. Handing it the full launcher icon would put a
+    rounded square inside that circle.
+-->
+<resources>
+    <style name="Theme.SaffronRoad" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/app_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+
+        <item name="android:windowSplashScreenBackground">@color/app_bg</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+    </style>
+</resources>

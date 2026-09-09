@@ -1,0 +1,128 @@
+name: Renovate
+
+# Self-hosted Renovate: it runs here, on a schedule, against this one repo.
+# There is no Mend app installed and no third party holding a token.
+#
+# It opens a pull request per update, CI runs on that pull request like any
+# other, and Renovate merges it on a LATER run once the checks are green. That
+# ordering is why this is scheduled twice a day rather than once: at the moment
+# a PR is opened CI has not run yet, so the merge can only happen on the next
+# pass. Once a day would make every update take two days to land.
+#
+# WHY THE SCHEDULE ITSELF NEEDS WATCHING. GitHub disables cron workflows in a
+# repository that has seen no activity for 60 days. While this is working its
+# own merge commits are that activity, so it keeps itself alive - but the day
+# it breaks, the commits stop, the 60-day clock starts, and the schedule is
+# switched off on top of whatever broke first. Two silent failures stacked.
+# The last step in this job exists to make sure the first one is never silent.
+
+on:
+  schedule:
+    # 03:17 and 15:17 UTC. Off the hour on purpose: the top of the hour is when
+    # every cron on GitHub fires at once and scheduled runs get queued.
+    - cron: '17 3,15 * * *'
+  workflow_dispatch:
+
+# Renovate authenticates as the GitHub App, not as this token. The only thing
+# the ambient GITHUB_TOKEN is used for is filing the failure issue below.
+permissions:
+  contents: read
+  issues: write
+
+# Two Renovate runs at once would fight over the same branches.
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      # WHY AN APP AND NOT A TOKEN IN SETTINGS.
+      #
+      # Renovate needs two things that no single personal access token can do
+      # at once:
+      #
+      #   1. Write to .github/workflows/. GitHub refuses this to any token
+      #      without the workflow permission, whatever else it holds - and half
+      #      the things worth updating here are `uses:` pins in those files.
+      #
+      #   2. Read check runs. GitHub does not offer the Checks permission to
+      #      fine-grained tokens at all; the API answers 403. Renovate treats
+      #      that as "no checks found", grades the branch yellow, and declines
+      #      to merge - silently, on every run, for ever. The failure looks
+      #      exactly like a queue of PRs nobody got round to.
+      #
+      # A classic token can do both, at the price of write access to every
+      # repository on the account, from a cron job, with commits that are
+      # indistinguishable from ones typed by hand. The App is scoped to this
+      # repository alone, mints a token that expires in an hour instead of
+      # sitting in Settings for months, and is revoked by uninstalling it.
+      - name: Mint an installation token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.RENOVATE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+
+      - name: Renovate
+        uses: renovatebot/github-action@v46.2.6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          # Pinned rather than floating on a major. Renovate updates itself
+          # through this file like everything else, which means the version
+          # that runs is one that appeared in a reviewable diff.
+          renovate-version: 44.65.5
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_AUTODISCOVER: 'false'
+          RENOVATE_ONBOARDING: 'false'
+          # renovate.json5 must exist. If it is ever deleted, this stops with
+          # an error rather than quietly falling back to Renovate's defaults -
+          # which would automerge nothing and explain nothing.
+          RENOVATE_REQUIRE_CONFIG: required
+          # Commit through the API rather than local git: the commits are
+          # signed, and Renovate cannot mistake its own branches for ones a
+          # human edited (which would make it refuse to rebase or merge them).
+          RENOVATE_PLATFORM_COMMIT: 'enabled'
+          LOG_LEVEL: info
+
+      # THE POINT OF THIS STEP.
+      #
+      # Everything above runs unattended, on a schedule, in a repository that
+      # can go quiet for months. An expired App key, a rate limit, or a typo in
+      # renovate.json5 fails this job - and a failed scheduled run notifies
+      # nobody who has not gone looking for it. Six months later the repo looks
+      # identical whether this has been working perfectly or dead since March.
+      #
+      # An issue is the one signal that reaches a solo owner by default. It is
+      # reused rather than reopened each run, so a persistent failure is one
+      # thread with a growing comment count, not a pile of duplicates.
+      - name: Say so, loudly, if that failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE='Renovate is not running'
+          NUM=$(gh issue list --state open --search "$TITLE in:title" \
+                  --json number,title \
+                  --jq "map(select(.title == \"$TITLE\")) | .[0].number // empty")
+          if [ -n "$NUM" ]; then
+            gh issue comment "$NUM" --body "Failed again: $RUN"
+          else
+            gh issue create --title "$TITLE" \
+              --label 'needs-manual-verification' \
+              --body "The scheduled Renovate run failed: $RUN
+
+          Dependency updates have stopped until this is fixed. Usual causes, in
+          order of likelihood: the GitHub App's private key expired or was
+          rotated, the App was uninstalled from this repository, or
+          renovate.json5 has a syntax error.
+
+          Worth knowing: GitHub disables scheduled workflows after 60 days
+          without repository activity. Renovate's own merges were what kept
+          this one alive, so if this sits unfixed the schedule will eventually
+          be switched off too, and will need re-enabling by hand on the Actions
+          tab as well as fixing."
+          fi

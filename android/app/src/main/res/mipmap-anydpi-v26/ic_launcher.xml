@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The launcher icon is the app's own brilliant-cut diamond mark — the same
+    geometry as the favicon in index.html and the PWA icons under icons/, all
+    three emitted from the single definition in tools/icons.js. Run
+    `npm run icons` to redraw every one of them.
+
+    The foreground PNGs keep the mark inside the adaptive safe circle (66dp of
+    the 108dp canvas), so no launcher mask can clip a facet.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_monochrome" />
+</adaptive-icon>

@@ -1,0 +1,210 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+
+  /*
+   * WHAT THERE IS TO UPDATE, IN A PROJECT WITH NO DEPENDENCIES.
+   *
+   * package.json declares none, there is no lockfile, and the README says so
+   * as a feature. So nothing here is about npm. The whole surface is:
+   *
+   *   .github/workflows/*.yml          the `uses:` pins        (github-actions)
+   *   android/build.gradle             the Android plugin      (gradle)
+   *   android/app/build.gradle         androidx + the Kotlin BOM
+   *   android/gradle/wrapper/*.props   the Gradle distribution (gradle-wrapper)
+   *
+   * All three managers are on by default and all three find those paths on
+   * their own - the gradle managers anchor on `(^|/)`, so living in android/
+   * rather than the repo root costs nothing. There is no root Gradle build to
+   * confuse them with.
+   *
+   * NOT covered, and it cannot be: the appimagetool download in release.yml.
+   * It pulls the `continuous` tag, which upstream republishes in place, so
+   * there is no version for anything to compare against. It is a permanent
+   * blind spot rather than an oversight - see the note in release.yml.
+   */
+  extends: [
+    'config:recommended',
+    ':dependencyDashboard',
+  ],
+
+  /*
+   * The dashboard is the answer to "it has been six months, is this thing
+   * still alive?". A single issue listing everything pending, rewritten every
+   * run. If it stops changing, nothing is running.
+   */
+  dependencyDashboardTitle: 'Dependency dashboard',
+
+  automerge: true,
+  automergeType: 'pr',
+
+  /*
+   * ON, NOW THAT main IS PROTECTED - AND IT WOULD HAVE BEEN USELESS BEFORE.
+   *
+   * This asks GitHub to enable its own auto-merge on the PR at the moment it
+   * is opened. GitHub only offers that on a PR it cannot already merge, i.e.
+   * one held up by a branch protection rule. With main unprotected the PR was
+   * mergeable the instant it opened, the call failed with `Pull request is in
+   * clean status`, and the only thing it produced was a confusing line in the
+   * log. main now requires test, the Linux packages build and the APK build,
+   * so there is something to wait for and the call succeeds.
+   *
+   * What it buys is latency. Renovate's own automerge only merges on a run
+   * AFTER the one that opened the PR, because CI has not finished yet when the
+   * PR is created - so an update waited for the next scheduled run, up to
+   * twelve hours. GitHub merges it the moment the last check goes green.
+   *
+   * Renovate's own automerge stays on underneath as the fallback, and it still
+   * refuses anything that is not green. The two do not conflict; whichever
+   * gets there first merges.
+   *
+   * THE RULE THAT MAKES THIS SAFE IS THE LIST OF REQUIRED CHECKS, NOT THIS
+   * LINE. Protection with no required checks selected means GitHub considers
+   * every PR mergeable and native automerge will merge one with failing tests.
+   * If those three checks are ever renamed, rename them in the protection rule
+   * in the same breath.
+   */
+  platformAutomerge: true,
+
+  /*
+   * Never `ignoreTests: true`. It short-circuits the branch status straight to
+   * green, which would merge every bump the instant it is opened - before CI
+   * has started, let alone passed. The tests are the entire reason this is
+   * allowed to merge itself.
+   */
+
+  /*
+   * Let a version sit in the wild for three days before this repo takes it.
+   * Compromised and simply-broken releases are overwhelmingly caught and
+   * pulled inside that window, and nothing here is urgent enough to be the
+   * thing that finds out first. This is the cheapest protection on the list.
+   */
+  minimumReleaseAge: '3 days',
+
+  prHourlyLimit: 0,
+  prConcurrentLimit: 5,
+
+  packageRules: [
+    {
+      description: 'One PR for the Actions pins, so CI runs once rather than five times.',
+      matchManagers: ['github-actions'],
+      groupName: 'github actions',
+
+      /*
+       * PINNED TO COMMIT SHAS, NOT TAGS.
+       *
+       * `actions/checkout@v4` is not a version, it is a moving pointer, and
+       * the thing it points at is owned by someone else. In March 2025 an
+       * attacker with a maintainer's credentials repointed tj-actions'
+       * existing tags at their own commit; every workflow that referenced the
+       * tag started running it on the next push, with no release published, no
+       * pull request opened, and nothing for minimumReleaseAge to wait on.
+       * A version that never changes cannot be waited out.
+       *
+       * A SHA cannot be repointed. Renovate keeps updating these - it rewrites
+       * the digest and the trailing version comment together - so the cost is
+       * that the workflows read `@8edcb1bd...  # v4.2.2` instead of `@v4`, and
+       * the gain is that every change to what actually executes arrives as a
+       * diff somebody could read.
+       */
+      pinDigests: true,
+    },
+
+    {
+      /*
+       * Majors of the actions merge by hand, for a reason specific to this
+       * repo: release.yml's steps are never exercised by a pull request. It
+       * runs on `v*` tags only, so a bump to upload-artifact, or to anything
+       * the release job leans on, goes green on a CI run that never executed
+       * it. Patches and minors are safe to take on that basis; a major is
+       * where the behaviour changes, and that one wants a human.
+       */
+      matchManagers: ['github-actions'],
+      matchUpdateTypes: ['major'],
+      automerge: false,
+      addLabels: ['needs-manual-verification'],
+    },
+
+    {
+      /*
+       * THE KOTLIN BOM MOVES WITH THE ANDROIDX ARTIFACTS OR NOT AT ALL.
+       *
+       * android/app/build.gradle explains at length why kotlin-bom is pinned:
+       * it drags the split kotlin-stdlib-jdk7/jdk8 jars up to match the main
+       * stdlib, and without it checkDebugDuplicateClasses fails the build.
+       *
+       * The trap is on the way out of that pin. Current androidx releases
+       * declare kotlin-stdlib 2.1.x, and a BOM still holding 1.8.22 constrains
+       * the graph BELOW what they ask for - so the build breaks on a version
+       * conflict. Split across two PRs, whichever lands first is the one that
+       * breaks main. Grouped, the constraint and the artifacts that need it
+       * move together and the PR is either green or it is not.
+       *
+       * Not automerged: androidx.activity in particular changed predictive-back
+       * and edge-to-edge defaults across these versions, and this app leans on
+       * OnBackPressedDispatcher at targetSdk 36. A green APK build proves it
+       * compiles, not that back still does the right thing on a phone.
+       */
+      matchPackageNames: [
+        'org.jetbrains.kotlin:kotlin-bom',
+        'androidx.webkit:webkit',
+        'androidx.activity:activity',
+        'androidx.core:core',
+      ],
+      groupName: 'androidx and the kotlin bom',
+      matchUpdateTypes: ['major', 'minor'],
+      automerge: false,
+      addLabels: ['needs-manual-verification'],
+    },
+
+    {
+      /*
+       * androidx.core 1.19.0 raises minCompileSdk to 37, and this app builds
+       * against 36 (android/app/build.gradle). Gradle would not fail with
+       * anything readable - it fails in the AAR metadata check, which reads
+       * like a dependency resolution problem rather than "you need a newer
+       * SDK". Capping it keeps a permanently-red PR out of the queue.
+       *
+       * Raise compileSdk to 37 and DELETE this rule. It is a note about today,
+       * not a policy.
+       */
+      matchPackageNames: ['androidx.core:core'],
+      allowedVersions: '<1.19.0',
+    },
+
+    {
+      /*
+       * AGP AND THE GRADLE DISTRIBUTION MOVE IN ONE PR, OR NEITHER MOVES.
+       *
+       * Learned the hard way, in this repo, in one afternoon. Gradle 9.7.1 and
+       * AGP 9.4.0 arrived as two separate PRs, and each one is broken without
+       * the other: AGP 8.x calls `InternalProblems`, a Gradle internal API
+       * deleted in 9.6.0, so Gradle 9 with AGP 8 fails at configuration time
+       * with a message about a service it could not create. The reverse fails
+       * too - AGP 9.4 will not run on a Gradle older than 9.6.
+       *
+       * Neither PR could ever have gone green on its own. Grouped, the pair is
+       * one diff that either builds or does not, which is the same trick the
+       * androidx rule above plays on the Kotlin BOM.
+       */
+      matchPackageNames: ['com.android.application', 'gradle'],
+      groupName: 'gradle and the android plugin',
+      automerge: false,
+      addLabels: ['needs-manual-verification'],
+    },
+
+    {
+      /*
+       * The Android plugin and the Gradle distribution merge by hand. AGP 9 is
+       * a migration, not a bump - it flips newDsl/builtInKotlin on and removes
+       * applicationVariants and variantFilter outright - and the plugin, the
+       * wrapper and the JDK have to land as one coherent set. The CI APK build
+       * would catch the wreckage, but "catch" is not the same as "resolve",
+       * and resolving it is a sitting-down job.
+       */
+      matchManagers: ['gradle', 'gradle-wrapper'],
+      matchUpdateTypes: ['major'],
+      automerge: false,
+      addLabels: ['needs-manual-verification'],
+    },
+  ],
+}

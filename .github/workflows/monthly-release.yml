@@ -1,0 +1,121 @@
+name: Monthly release
+
+# Renovate merges to main. It does not release, and nothing else did either -
+# so an androidx bump could land, pass everything, and sit on main for ever
+# while every installed app carried on running the last APK cut by hand.
+#
+# This closes that loop once a month: if main has moved in a way that reaches
+# the app, and CI is green on it, tag the next patch version. release.yml does
+# the rest - it is triggered by the tag, exactly as it is when a tag is pushed
+# from a laptop, and none of its checks are bypassed.
+#
+# It is a TAG, not a release. Everything about how a release is built, verified
+# and published still lives in release.yml and is unchanged by this file.
+
+on:
+  schedule:
+    # 04:23 UTC on the 1st. Monthly, because the point is to ship accumulated
+    # dependency updates, and dependency updates are not urgent by nature.
+    - cron: '23 4 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monthly-release
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      # The same App as Renovate, for the same class of reason. A tag pushed
+      # with GITHUB_TOKEN does not start a workflow run - GitHub refuses to let
+      # a token trigger further automation - so release.yml would simply never
+      # fire and the tag would sit there looking like a release that failed.
+      # An App's installation token is not GITHUB_TOKEN and does trigger it.
+      - name: Mint an installation token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.RENOVATE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Every tag, and the full history, or "what changed since the last
+          # release" cannot be asked.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Three questions, and any `no` ends the run without a tag. A month with
+      # nothing worth shipping is the expected case, not a failure.
+      - name: Is there anything to release?
+        id: check
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          LAST=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+          if [ -z "$LAST" ]; then
+            echo "no v* tag exists yet - the first release is a decision, not a cron job" >&2
+            echo "go=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "last release: $LAST"
+
+          # 1. Has anything reached THE APP? Renovate's bread and butter is
+          #    workflow pins and CI plumbing, and a release whose only content
+          #    is "we now use actions/checkout one commit later" is noise in
+          #    everyone's update list. Only paths that end up in a build count.
+          CHANGED=$(git diff --name-only "$LAST"..HEAD -- \
+            index.html styles.css sw.js manifest.webmanifest \
+            src/ icons/ android/ tools/ | wc -l)
+          if [ "$CHANGED" -eq 0 ]; then
+            echo "nothing since $LAST touches the app - not releasing"
+            echo "go=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "$CHANGED app files changed since $LAST"
+
+          # 2. Is main actually green? This tags whatever HEAD happens to be,
+          #    unattended, so it asks rather than assumes. release.yml would
+          #    catch a broken build anyway - but it would do it halfway through
+          #    publishing, leaving a tag and a half-finished release behind.
+          SHA=$(git rev-parse HEAD)
+          RUNS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${SHA}/check-runs" \
+                   --jq '[.check_runs[] | select(.name != "tag")]')
+          TOTAL=$(jq 'length' <<<"$RUNS")
+          BAD=$(jq '[.[] | select(.status != "completed" or
+                     (.conclusion | IN("success","skipped","neutral") | not))] | length' <<<"$RUNS")
+          echo "$TOTAL checks on $SHA, $BAD not green"
+          if [ "$TOTAL" -lt 3 ] || [ "$BAD" -ne 0 ]; then
+            echo "main is not green (or CI has not finished) - not releasing" >&2
+            echo "go=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+
+          # 3. The next patch. Deliberately never minor or major: this job
+          #    ships dependency updates, and calling that a feature release
+          #    would make the version number lie about what is in it. A minor
+          #    or major is something a person decides and tags by hand.
+          V=${LAST#v}
+          MAJOR=${V%%.*}; REST=${V#*.}; MINOR=${REST%%.*}; PATCH=${REST#*.}
+          PATCH=${PATCH%%[-+]*}
+          NEXT="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+          echo "next: $NEXT"
+          echo "tag=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "go=true" >> "$GITHUB_OUTPUT"
+
+      # Creating the ref is the whole action. release.yml is watching for it,
+      # and builds the APK and the three Linux packages from this commit.
+      - name: Tag it
+        if: steps.check.outputs.go == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/tags/${{ steps.check.outputs.tag }}" \
+            -f sha="${{ steps.check.outputs.sha }}" >/dev/null
+          echo "tagged ${{ steps.check.outputs.tag }} - release.yml takes it from here"

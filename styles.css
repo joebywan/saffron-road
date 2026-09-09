@@ -1,0 +1,1508 @@
+/* ==================================================================
+   Saffron Road — all of the styling. Self-contained: system fonts, CSS
+   shapes and inline SVG only. No network requests of any kind.
+   ================================================================== */
+
+/* ---------- Palette: light is the base, dark overrides ------------ */
+:root {
+  color-scheme: light;
+
+  --bg: #eaeef5;
+  --bg-panel: #ffffff;
+  --bg-sunken: #e4e9f2;
+  --bg-raised: #f7f9fc;
+  --fg: #131c29;
+  --fg-muted: #566579;
+  --line: #c6d0de;
+  --line-strong: #93a2b7;
+  --accent: #2b5fd9;
+  --accent-ink: #ffffff;
+  --accent-soft: #dbe5fb;
+  --good: #17724a;
+  --good-soft: #cdeadd;
+  --bad: #b02a20;
+  --bad-soft: #f6d9d6;
+  --warn: #8a5a00;
+  --focus: #0b4fd0;
+  --shadow-1: 0 1px 2px rgba(15, 25, 40, .10);
+  --shadow-2: 0 2px 6px rgba(15, 25, 40, .10), 0 10px 24px rgba(15, 25, 40, .10);
+  --radius: 10px;
+  --radius-lg: 14px;
+
+  /* Resources. Colour is never the only cue — each has its own outline.
+     Six flat tones per token (bright highlight -> deepest shadow) plus a rim,
+     generated from the goods colours rather than hand-picked, so the six ramps
+     are consistent with each other. -fill is the body tone anything outside
+     the SVG keys off; the rest is what the shading uses. */
+  --token-cinnamon-hi: #e7d8ca; --token-cinnamon-lite: #c6a381; --token-cinnamon-fill: #a87340;
+  --token-cinnamon-dark: #835a32; --token-cinnamon-deep: #614325; --token-cinnamon-stroke: #402c18;
+  --token-cinnamon-ink: #ffffff; --token-cinnamon-halo: rgba(18, 12, 6, .82);
+
+  --token-indigo-hi: #ccd6e6; --token-indigo-lite: #889dc4; --token-indigo-fill: #4a6ba5;
+  --token-indigo-dark: #3a5381; --token-indigo-deep: #2b3e60; --token-indigo-stroke: #1c293f;
+  --token-indigo-ink: #ffffff; --token-indigo-halo: rgba(18, 12, 6, .82);
+
+  --token-cardamom-hi: #dbe6d1; --token-cardamom-lite: #abc493; --token-cardamom-fill: #7fa65c;
+  --token-cardamom-dark: #638148; --token-cardamom-deep: #4a6035; --token-cardamom-stroke: #303f23;
+  --token-cardamom-ink: #ffffff; --token-cardamom-halo: rgba(18, 12, 6, .82);
+
+  --token-saffron-hi: #f4cfc0; --token-saffron-lite: #e58f6b; --token-saffron-fill: #d8551f;
+  --token-saffron-dark: #a84218; --token-saffron-deep: #7d3112; --token-saffron-stroke: #52200c;
+  --token-saffron-ink: #ffffff; --token-saffron-halo: rgba(18, 12, 6, .82);
+
+  --token-pepper-hi: #dedbd9; --token-pepper-lite: #b2aba6; --token-pepper-fill: #8a8078;
+  --token-pepper-dark: #6c645e; --token-pepper-deep: #504a46; --token-pepper-stroke: #34312e;
+  --token-pepper-ink: #ffffff; --token-pepper-halo: rgba(18, 12, 6, .82);
+
+  --token-coin-hi: #f4e4c4; --token-coin-lite: #e6c073; --token-coin-fill: #d9a02b;
+  --token-coin-dark: #a97d22; --token-coin-deep: #7e5d19; --token-coin-stroke: #523d10;
+  --token-coin-ink: #2a1c06; --token-coin-halo: rgba(255, 250, 235, .88);
+
+  /* Tiers + seats */
+  --tier1: #3f8f6a;
+  --tier2: #b3801f;
+  --tier3: #6f57bd;
+  --seat0: #2b5fd9;
+  --seat1: #b3801f;
+  --seat2: #17804d;
+  --seat3: #a03a8f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg: #0e1219;
+    --bg-panel: #19202b;
+    --bg-sunken: #121821;
+    --bg-raised: #212a37;
+    --fg: #e7edf6;
+    --fg-muted: #97a5ba;
+    --line: #2d3745;
+    --line-strong: #4d5a6d;
+    --accent: #6d9bff;
+    --accent-ink: #0a1020;
+    --accent-soft: #1e2c48;
+    --good: #4fce97;
+    --good-soft: #143526;
+    --bad: #ff8078;
+    --bad-soft: #3a1c19;
+    --warn: #e3b25c;
+    --focus: #8fb4ff;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow-2: 0 2px 6px rgba(0, 0, 0, .45), 0 12px 28px rgba(0, 0, 0, .4);
+
+    /* Same tokens, lit for a dark page: the shadow end lifts so faces do
+       not collapse into the panel, and onyx swaps to a pale rim — a black
+       token on a near-black panel is the one case colour cannot carry. */
+    --token-cinnamon-hi: #e9dccf; --token-cinnamon-lite: #cbac8e; --token-cinnamon-fill: #b18153;
+    --token-cinnamon-dark: #8a6541; --token-cinnamon-deep: #664b30; --token-cinnamon-stroke: #503a25;
+    --token-cinnamon-ink: #ffffff; --token-cinnamon-halo: rgba(18, 12, 6, .82);
+
+    --token-indigo-hi: #d1dae8; --token-indigo-lite: #93a7ca; --token-indigo-fill: #5c7aae;
+    --token-indigo-dark: #485f88; --token-indigo-deep: #354765; --token-indigo-stroke: #29374e;
+    --token-indigo-ink: #ffffff; --token-indigo-halo: rgba(18, 12, 6, .82);
+
+    --token-cardamom-hi: #dfe9d6; --token-cardamom-lite: #b3ca9e; --token-cardamom-fill: #8caf6c;
+    --token-cardamom-dark: #6d8854; --token-cardamom-deep: #51653f; --token-cardamom-stroke: #3f4f31;
+    --token-cardamom-ink: #2a1c06; --token-cardamom-halo: rgba(255, 250, 235, .88);
+
+    --token-saffron-hi: #f5d4c7; --token-saffron-lite: #e89a7a; --token-saffron-fill: #dc6635;
+    --token-saffron-dark: #ac502a; --token-saffron-deep: #803b1f; --token-saffron-stroke: #632e18;
+    --token-saffron-ink: #ffffff; --token-saffron-halo: rgba(18, 12, 6, .82);
+
+    --token-pepper-hi: #e2dfdd; --token-pepper-lite: #bab4af; --token-pepper-fill: #968d86;
+    --token-pepper-dark: #756e68; --token-pepper-deep: #57524d; --token-pepper-stroke: #433f3c;
+    --token-pepper-ink: #ffffff; --token-pepper-halo: rgba(18, 12, 6, .82);
+
+    --token-coin-hi: #f5e7ca; --token-coin-lite: #e8c781; --token-coin-fill: #ddaa40;
+    --token-coin-dark: #ac8432; --token-coin-deep: #806225; --token-coin-stroke: #634c1d;
+    --token-coin-ink: #2a1c06; --token-coin-halo: rgba(255, 250, 235, .88);
+
+    --tier1: #4fbb8b;
+    --tier2: #d6a83f;
+    --tier3: #9b83e8;
+    --seat0: #6d9bff;
+    --seat1: #d6a83f;
+    --seat2: #4fce97;
+    --seat3: #de85cf;
+  }
+}
+
+/* ---------- Safe areas ------------------------------------------- */
+/* viewport-fit=cover (index.html) lets the page run under a notch and the
+   home indicator, so every edge of chrome adds the inset back. One set of
+   tokens rather than env() sprinkled around; --pad is the page gutter, which
+   narrow screens shrink. */
+:root {
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --pad: 12px;
+}
+
+/* ---------- Base ------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* The canvas behind the safe areas, which the body's own box never reaches. */
+html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 700; line-height: 1.2; }
+
+/* display:flex/grid on a component would otherwise beat the hidden attribute */
+[hidden] { display: none !important; }
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute; left: 8px; top: -60px; z-index: 100;
+  background: var(--accent); color: var(--accent-ink);
+  padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: 600;
+}
+.skip-link:focus { top: 8px; }
+
+.empty { color: var(--fg-muted); font-size: 12.5px; font-style: italic; }
+
+/* ---------- Buttons ---------------------------------------------- */
+.btn {
+  font: inherit; font-weight: 650; font-size: 13px;
+  color: var(--fg);
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 6px 11px;
+  cursor: pointer;
+  transition: background .14s ease, border-color .14s ease, transform .1s ease;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg-sunken); }
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn--primary:hover { filter: brightness(1.08); background: var(--accent); }
+.btn--ghost { background: transparent; }
+.btn--ghost:hover { background: var(--bg-sunken); }
+.btn--small { font-size: 12px; padding: 4px 8px; }
+.btn--big { font-size: 15px; padding: 9px 18px; }
+.btn--off {
+  opacity: .45;
+  cursor: not-allowed;
+  background: var(--bg-sunken);
+  border-color: var(--line);
+  color: var(--fg-muted);
+  filter: none;
+}
+.btn--off:hover { background: var(--bg-sunken); }
+.btn--off:active { transform: none; }
+
+/* ---------- Layout ------------------------------------------------ */
+.game { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.board { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+/* The move log, and nothing else. Off screen at every width — it is the
+   aria-live region that narrates the bots, and the Move log sheet is the
+   visible way in. */
+.side {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip-path: inset(50%); margin: -1px; padding: 0; border: 0;
+}
+
+/* The app bar is a phone thing. On a wide screen it dissolves — display:
+   contents puts #status straight back into the board where it has always
+   been — and its round chip and menu button are not shown at all. */
+.appbar { display: contents; }
+.appbar-round, .iconbtn { display: none; }
+/* Regions only the phone layout fills. Empty is the wide-screen state. */
+#oppstrip:empty, #you:empty { display: none; }
+
+.sec {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px 12px;
+  min-width: 0;
+}
+.sec-title {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--fg-muted); margin-bottom: 8px;
+  display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap;
+}
+.sec-note { text-transform: none; letter-spacing: 0; font-weight: 500; opacity: .85; }
+
+/* Wide rows scroll inside themselves — the page never scrolls sideways. */
+.scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+/* ---------- Status ------------------------------------------------ */
+.status {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 9px 14px;
+}
+.status-main { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; }
+.status-hint { color: var(--fg-muted); font-size: 13px; }
+.status-note { margin-left: auto; color: var(--fg-muted); font-size: 12px; }
+
+/* ---------- The turn report ----------------------------------------------
+   What the last completed turn was, and where it left whoever took it. Shared
+   by both layouts: the phone needs it most, but a wide screen watching three
+   bots move has exactly the same problem.
+
+   The whole point is that it PERSISTS. It is not a toast and it is not an
+   animation — it is still there when you look up, including through your own
+   turn, because the last bot's move is what you are deciding against.
+   ---------------------------------------------------------------------- */
+.report:empty { display: none; }
+.report-card {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 7px 10px;
+}
+/* Waiting on a press: the one state where the game is not moving on without
+   you, so it says so with the accent the rest of the app uses for "this is
+   the live thing". */
+.report-card.is-pending { border-left-color: var(--accent); }
+/* The loop gave a seat up. This is the only state in which the board is not
+   going anywhere on its own, so it is marked in the colour the app keeps for
+   things that are wrong, and it outranks the pending accent. */
+.report-card--stalled, .report-card--stalled.is-pending { border-left-color: var(--bad); }
+.report-note { margin: 0; font-size: 12px; line-height: 1.25; color: var(--fg-muted); }
+/* The game-over line, once the standings have been put away: still the same
+   sentence, now the way back to them. Underlined rather than button-shaped,
+   because it lives in a status bar and a second box there would read as a
+   control the game is waiting on. */
+.status-main--btn {
+  appearance: none; border: 0; background: none; padding: 0;
+  font: inherit; font-weight: 700; color: inherit;
+  text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: var(--line-strong);
+  cursor: pointer; text-align: left;
+  min-height: 44px;
+}
+.status-main--btn:hover { text-decoration-color: var(--accent); }
+.report-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.report-line {
+  margin: 0;
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+  font-size: 13px; line-height: 1.2;
+}
+.report-name { font-weight: 750; }
+.report-did { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; min-width: 0; }
+.report-verb { color: var(--fg-muted); }
+.report-resources { display: inline-flex; align-items: center; gap: 2px; }
+.report-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 6px 1px 3px;
+  background: var(--bg-sunken); border: 1px solid var(--line);
+  border-radius: 999px; font-size: 12px; font-weight: 700;
+}
+.report-tag--blind { padding-left: 6px; color: var(--fg-muted); font-weight: 650; }
+.report-tag--company { padding-left: 6px; color: var(--accent); border-color: var(--accent-soft); }
+/* The status line is a button into the side-by-side comparison. It looks like
+   a line of information because that is what it mostly is; the affordance is
+   its hit area and its accessible name. */
+.report-status {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; min-height: 32px;
+  padding: 2px 4px; margin: 0 -4px;
+  font: inherit; color: inherit; text-align: left;
+  background: none; border: 1px solid transparent; border-radius: 8px;
+  cursor: pointer;
+}
+.report-status:hover { background: var(--bg-sunken); }
+.report-pts {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: baseline; gap: 2px;
+  font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.report-pts-unit { font-size: 10px; font-weight: 700; color: var(--fg-muted); }
+.report-chips { display: flex; align-items: center; gap: 3px; flex: 1 1 auto; min-width: 0; }
+.report-next { flex: 0 0 auto; min-height: 44px; min-width: 64px; }
+/* Every player at once — the comparison the rotating report cannot give. */
+.sheet-players { display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- Resources --------------------------------------------------- */
+.token {
+  position: relative;
+  display: inline-flex;
+  /* --s is the size the markup asked for; --gs is a stylesheet override, and
+     it exists because the markup's value arrives as an inline style, which no
+     ordinary rule can outrank. A region that needs smaller tokens on a small
+     screen sets --gs on itself and every token inside follows. */
+  width: var(--gs, var(--s, 20px)); height: var(--gs, var(--s, 20px));
+  flex: 0 0 auto;
+}
+/* The SVG fills its span, so --s is the SINGLE place a resource's rendered size is
+   decided and a media query can shrink every pip on a small screen without the
+   markup knowing anything about it. The viewBox does the rest. */
+.token-svg { display: block; width: 100%; height: 100%; }
+
+/* THE COUNT, ON THE STONE.
+   It is an SVG <text> inside the resource rather than an overlaid span, so it
+   scales with the token, cannot drift out of it, and survives being cloned
+   into a mask for the silhouette check.
+
+   paint-order:stroke paints the STROKE FIRST and the fill over it, which turns
+   --t-halo into a thick, glyph-shaped backing plate: the ink is only ever seen
+   against that halo, never against the body. That is what makes the digit safe
+   on tokens whose bodies run from a pale warm grey to a deep indigo, in both
+   themes — pepper takes white ink on a dark halo, coin is the one that takes
+   dark ink, and SAFFRON HAS NO BODY AT ALL. Three loose threads give a digit
+   nothing to sit on, so the halo IS its background; that is why line art works
+   here. A glyph-shaped halo rather than a plate is also what keeps the
+   silhouette readable: it removes the digits from the shape and nothing more.
+
+   stroke-width is in the resource's own 24-unit box, so it tracks the token. */
+.token-num {
+  font-family: inherit;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  paint-order: stroke;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.token--cinnamon {
+  --t-hi: var(--token-cinnamon-hi); --t-lite: var(--token-cinnamon-lite); --t-mid: var(--token-cinnamon-fill);
+  --t-dark: var(--token-cinnamon-dark); --t-deep: var(--token-cinnamon-deep); --t-rim: var(--token-cinnamon-stroke);
+  --t-ink: var(--token-cinnamon-ink); --t-halo: var(--token-cinnamon-halo);
+}
+.token--indigo {
+  --t-hi: var(--token-indigo-hi); --t-lite: var(--token-indigo-lite); --t-mid: var(--token-indigo-fill);
+  --t-dark: var(--token-indigo-dark); --t-deep: var(--token-indigo-deep); --t-rim: var(--token-indigo-stroke);
+  --t-ink: var(--token-indigo-ink); --t-halo: var(--token-indigo-halo);
+}
+.token--cardamom {
+  --t-hi: var(--token-cardamom-hi); --t-lite: var(--token-cardamom-lite); --t-mid: var(--token-cardamom-fill);
+  --t-dark: var(--token-cardamom-dark); --t-deep: var(--token-cardamom-deep); --t-rim: var(--token-cardamom-stroke);
+  --t-ink: var(--token-cardamom-ink); --t-halo: var(--token-cardamom-halo);
+}
+.token--saffron {
+  --t-hi: var(--token-saffron-hi); --t-lite: var(--token-saffron-lite); --t-mid: var(--token-saffron-fill);
+  --t-dark: var(--token-saffron-dark); --t-deep: var(--token-saffron-deep); --t-rim: var(--token-saffron-stroke);
+  --t-ink: var(--token-saffron-ink); --t-halo: var(--token-saffron-halo);
+}
+.token--pepper {
+  --t-hi: var(--token-pepper-hi); --t-lite: var(--token-pepper-lite); --t-mid: var(--token-pepper-fill);
+  --t-dark: var(--token-pepper-dark); --t-deep: var(--token-pepper-deep); --t-rim: var(--token-pepper-stroke);
+  --t-ink: var(--token-pepper-ink); --t-halo: var(--token-pepper-halo);
+}
+.token--coin {
+  --t-hi: var(--token-coin-hi); --t-lite: var(--token-coin-lite); --t-mid: var(--token-coin-fill);
+  --t-dark: var(--token-coin-dark); --t-deep: var(--token-coin-deep); --t-rim: var(--token-coin-stroke);
+  --t-ink: var(--token-coin-ink); --t-halo: var(--token-coin-halo);
+}
+
+.token-ghost { position: absolute; right: -16%; bottom: -14%; width: 74%; height: 74%; opacity: .12; }
+.token-ghost svg { fill: var(--t-mid); stroke: none; display: block; }
+
+/* ---------- Cost pills --------------------------------------------
+   A pip is now ONE element: the token, carrying its number. The capsule that
+   used to wrap [token][number] is gone — with nothing to bind together it was
+   only a border and eight pixels of padding per pip, repeated four times a
+   card across twelve cards.
+   ------------------------------------------------------------------ */
+.cost {
+  position: relative;
+  display: flex; flex-wrap: wrap; gap: 4px;
+  list-style: none; margin: 0; padding: 0;
+}
+.pill {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 1px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 12px; font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+/* The pre-discount price, kept only where a discount actually changed it. */
+.pill.is-covered { opacity: .42; }
+/* Whether you can cover a colour is a state on the pip, not a second number:
+   the token itself is ringed rather than re-labelled. */
+.pill.is-short { border-color: var(--bad); background: var(--bad-soft); }
+.pill--free {
+  padding: 2px 8px; border-radius: 999px; background: var(--bg-sunken); border-color: var(--line);
+  color: var(--fg-muted); font-weight: 600; font-style: italic;
+}
+
+/* ---------- Development cards ------------------------------------- */
+.tiers { display: flex; flex-direction: column; gap: 10px; }
+.tier { min-width: 0; }
+.card-row { display: flex; gap: 9px; align-items: stretch; padding: 2px; }
+
+.card {
+  position: relative;
+  flex: 0 0 auto;
+  width: 134px;
+  min-height: 178px;
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--tier-c, var(--line-strong));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+  transition: box-shadow .15s ease, transform .12s ease, border-color .15s ease;
+}
+.card--t1 { --tier-c: var(--tier1); }
+.card--t2 { --tier-c: var(--tier2); }
+.card--t3 { --tier-c: var(--tier3); }
+.card:hover, .card:focus-within { box-shadow: var(--shadow-2); transform: translateY(-2px); }
+.card.is-buyable {
+  border-color: var(--good);
+  box-shadow: 0 0 0 2px var(--good-soft), var(--shadow-1);
+}
+.card.is-affordable { border-color: var(--line-strong); }
+.card--empty {
+  align-items: center; justify-content: center;
+  border-style: dashed; box-shadow: none; background: var(--bg-sunken);
+}
+
+.card-art { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.card-head { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+.card-points { font-size: 26px; font-weight: 800; line-height: .95; letter-spacing: -.03em; min-height: 22px; }
+.card-tier {
+  position: absolute; left: 0; top: 26px;
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  color: var(--tier-c); opacity: .9;
+}
+.card-bonus { display: inline-flex; }
+.card .cost { margin-top: auto; }
+.card-need {
+  position: relative;
+  margin: 0; font-size: 11px; line-height: 1.25; color: var(--bad); font-weight: 600;
+}
+
+.card-actions {
+  position: relative;
+  display: flex; gap: 5px;
+  opacity: 0; transform: translateY(3px);
+  pointer-events: none;
+  transition: opacity .13s ease, transform .13s ease;
+}
+.card-actions .btn { flex: 1 1 auto; padding: 5px 6px; font-size: 12px; }
+.card:hover .card-actions,
+.card:focus-within .card-actions,
+.card.is-buyable .card-actions { opacity: 1; transform: none; pointer-events: auto; }
+@media (hover: none) {
+  .card-actions { opacity: 1; transform: none; pointer-events: auto; }
+}
+
+.card--mini { width: 118px; min-height: 152px; padding: 6px; }
+.card--mini .card-points { font-size: 20px; }
+.card--mini .pill { font-size: 11.5px; padding: 1px 6px 1px 2px; }
+.card--mini .card-need { font-size: 10px; }
+
+/* A reserved card is held, not owned — the dashed edge and the corner flag
+   are the at-a-glance difference from a bought card. */
+.card--reserved {
+  border-style: dashed;
+  border-top-style: solid;
+  background:
+    linear-gradient(var(--bg-panel), var(--bg-panel)) padding-box,
+    var(--bg-panel);
+}
+.card--reserved .card-head { padding-right: 4px; }
+.card-flag {
+  position: absolute; right: -22px; top: 9px;
+  transform: rotate(45deg);
+  width: 84px; padding: 1px 0;
+  text-align: center;
+  font-size: 8.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent-ink); background: var(--accent);
+  z-index: 2;
+}
+/* Nobody at this seat can act on it — an opponent's public reserve. */
+.card--readonly { opacity: .94; }
+.card--readonly:hover, .card--readonly:focus-within { transform: none; box-shadow: var(--shadow-1); }
+.card-need--ok { color: var(--good); }
+
+.cardback {
+  position: relative;
+  flex: 0 0 auto;
+  width: 56px; height: 76px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background:
+    repeating-linear-gradient(45deg, var(--bg-sunken) 0 6px, var(--bg-raised) 6px 12px);
+  border-top: 3px solid var(--tier-c, var(--line-strong));
+  display: grid; place-items: center;
+}
+.cardback--t1 { --tier-c: var(--tier1); }
+.cardback--t2 { --tier-c: var(--tier2); }
+.cardback--t3 { --tier-c: var(--tier3); }
+.cardback-mark { font-size: 20px; font-weight: 800; color: var(--fg-muted); }
+/* Several face-down cards are drawn as one back carrying the count. */
+.cardback--stack {
+  box-shadow: 3px 3px 0 -1px var(--bg-raised), 4px 4px 0 -1px var(--line);
+}
+.cardback-count {
+  position: absolute; right: 3px; bottom: 2px;
+  font-size: 11px; font-weight: 800; color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Deck stacks -------------------------------------------- */
+.deck {
+  position: relative;
+  flex: 0 0 auto;
+  width: 92px; min-height: 178px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 8px 6px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--tier-c, var(--line-strong));
+  background:
+    linear-gradient(var(--bg-sunken), var(--bg-sunken)) padding-box,
+    repeating-linear-gradient(135deg, var(--bg-raised) 0 8px, var(--bg-sunken) 8px 16px);
+  box-shadow: var(--shadow-1);
+}
+.deck--t1 { --tier-c: var(--tier1); }
+.deck--t2 { --tier-c: var(--tier2); }
+.deck--t3 { --tier-c: var(--tier3); }
+.deck-tier { font-size: 15px; font-weight: 800; color: var(--tier-c); letter-spacing: .06em; }
+.deck-count { font-size: 24px; font-weight: 800; line-height: 1; }
+.deck .btn-deck { font-size: 11px; padding: 4px 6px; white-space: normal; text-align: center; }
+
+/* ---------- Companies -------------------------------------------------- */
+.company-row { display: flex; gap: 9px; padding: 2px; }
+.company {
+  flex: 0 0 auto;
+  width: 172px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 8px 9px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line-strong);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-1);
+}
+.company.is-met { border-left-color: var(--good); box-shadow: 0 0 0 2px var(--good-soft), var(--shadow-1); }
+.company-head { display: flex; align-items: baseline; gap: 7px; }
+.company-pts {
+  font-size: 17px; font-weight: 800; color: var(--accent);
+  background: var(--accent-soft); border-radius: 6px; padding: 0 6px; line-height: 1.4;
+}
+.company-name { font-size: 12.5px; font-weight: 650; line-height: 1.25; }
+.company--mini { width: auto; max-width: 100%; padding: 5px 7px; }
+.company--mini .company-name { font-size: 11px; }
+.company--mini .company-pts { font-size: 13px; }
+.company .btn { margin-top: 2px; }
+
+/* ---------- Bank ---------------------------------------------------- */
+.bank-row { display: flex; gap: 9px; padding: 2px; }
+.pile {
+  position: relative;
+  flex: 1 1 0; min-width: 84px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 9px 6px 7px;
+  font: inherit; color: inherit;
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .13s ease, box-shadow .13s ease, transform .1s ease, opacity .13s ease;
+}
+.pile:hover { background: var(--bg-sunken); }
+.pile:active { transform: translateY(1px); }
+/* No separate count element: how many are in the pile is struck on the token,
+   which is why the token gets to be half as big again as it used to be. */
+.pile.is-picked {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+  background: var(--accent-soft);
+}
+.pile-badge {
+  position: absolute; top: -8px; right: -6px;
+  background: var(--accent); color: var(--accent-ink);
+  font-size: 11px; font-weight: 800;
+  border-radius: 999px; padding: 1px 7px;
+  box-shadow: var(--shadow-1);
+}
+.pile.is-off { opacity: .38; cursor: not-allowed; filter: grayscale(.55); }
+/* Gold is the one pile that is NEVER takeable — you get it by reserving — so
+   its "off" state is permanent rather than a passing condition. Greying it
+   the same way as a temporarily-empty pile left the wild token looking dead
+   for the whole game. It still reads as unavailable (dimmed, not-allowed,
+   aria-disabled, and a reason on click) but keeps enough of its colour to be
+   the token players scan for. */
+.pile--coin.is-off { opacity: .62; filter: grayscale(.12); }
+.pile.is-off:hover { background: var(--bg-raised); }
+.pile.is-off:active { transform: none; }
+
+/* ---------- Take bar ------------------------------------------------ */
+.takebar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 10px; padding: 8px 10px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.takebar-text { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.sel-chips { display: flex; gap: 4px; }
+.sel-chip {
+  display: inline-flex; padding: 3px; border-radius: 8px;
+  background: var(--bg-panel); border: 1px solid var(--line-strong);
+}
+.takebar-desc { font-size: 13px; color: var(--fg-muted); }
+.takebar-desc.is-ready { color: var(--good); font-weight: 700; }
+.takebar-actions { display: flex; gap: 7px; margin-left: auto; flex-wrap: wrap; }
+
+/* ---------- Players -------------------------------------------------- */
+.player {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  padding: 8px 10px 10px;
+  display: flex; flex-direction: column; gap: 6px;
+  min-width: 0;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.player.is-active {
+  border-left-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+  background: var(--bg-panel);
+}
+.player-head { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.player-name { font-size: 14.5px; display: inline-flex; align-items: baseline; gap: 5px; min-width: 0; }
+.player-kind { font-size: 11px; font-weight: 500; color: var(--fg-muted); text-transform: capitalize; }
+.player-points {
+  margin-left: auto;
+  font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums;
+  background: var(--bg-sunken); border-radius: 7px; padding: 0 8px;
+}
+.turn-badge {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  background: var(--accent); color: var(--accent-ink);
+  border-radius: 999px; padding: 1px 8px;
+}
+.thinking {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 700; color: var(--warn);
+  background: var(--bg-sunken); border-radius: 999px; padding: 1px 9px;
+}
+.thinking .dots { animation: pulse 1s ease-in-out infinite; letter-spacing: .1em; }
+@keyframes pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+.seat {
+  display: inline-grid; place-items: center;
+  width: 20px; height: 20px; flex: 0 0 auto;
+  border-radius: 6px;
+  font-size: 11.5px; font-weight: 800;
+  color: #fff; background: var(--line-strong);
+}
+.seat--0 { background: var(--seat0); }
+.seat--1 { background: var(--seat1); }
+.seat--2 { background: var(--seat2); }
+.seat--3 { background: var(--seat3); }
+@media (prefers-color-scheme: dark) { .seat { color: #0c111a; } }
+
+.player-stats { display: flex; gap: 10px; font-size: 11.5px; color: var(--fg-muted); }
+.player-stats b { color: var(--fg); font-size: 12.5px; }
+
+.player-line { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.player-line--col { flex-direction: column; align-items: stretch; gap: 4px; }
+.line-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--fg-muted); font-weight: 700; width: 46px; flex: 0 0 auto;
+}
+.player-line--col .line-label { width: auto; }
+
+/* ---------- Holdings: one chip per colour, tokens AND cards ---------
+   The token carries SPENDABLE TOKENS. The little card beside it carries the
+   PERMANENT DISCOUNT. They are never mistakable for one another because they
+   are not the same object: one is a resource, one is a card, and that is exactly
+   the distinction the two numbers mean. .opp-cards on the opponent strip is
+   the same idiom and shares this rule, so a number in a card is always a count
+   of cards wherever it appears.
+   ------------------------------------------------------------------ */
+.hold { display: inline-flex; align-items: center; gap: 2px; }
+.hold.is-zero { opacity: .34; }
+.hold-cards, .opp-cards {
+  flex: 0 0 auto;
+  display: inline-grid; place-items: center;
+  min-width: 15px; height: 20px; padding: 2px 2px 0;
+  font-size: 11px; font-weight: 800; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+  background: var(--bg-sunken);
+  border: 1px solid var(--line-strong);
+  /* Portrait, with a coloured spine along the top: at 15 by 20 pixels that is
+     the smallest thing that still reads as a CARD rather than as a second
+     badge, which is the whole job — this number is cards, the one on the token
+     beside it is tokens. */
+  border-top: 4px solid var(--line-strong);
+  border-radius: 2px 2px 4px 4px;
+}
+
+.chips { display: flex; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 6px 2px 3px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  font-size: 12px; font-weight: 750; font-variant-numeric: tabular-nums;
+}
+.chip.is-zero { opacity: .34; }
+.chip--btn { cursor: pointer; font-family: inherit; color: inherit; }
+.chip--btn:hover { background: var(--bg-raised); border-color: var(--line-strong); }
+.chip--btn[aria-disabled="true"] { cursor: not-allowed; opacity: .35; }
+.chip--tray { border-color: var(--accent); background: var(--accent-soft); }
+.chips--big .chip { font-size: 15px; padding: 5px 11px 5px 6px; }
+
+.mini-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ---------- Log ------------------------------------------------------ */
+.log {
+  list-style: none; margin: 0; padding: 0;
+  max-height: 260px; overflow-y: auto;
+  font-size: 12.5px;
+  scrollbar-width: thin;
+}
+.log-item {
+  display: flex; align-items: baseline; gap: 6px;
+  padding: 3px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.log-item:last-child { border-bottom: 0; }
+.log-round { color: var(--fg-muted); font-size: 10.5px; font-weight: 700; min-width: 24px; }
+.dot { width: 9px; height: 9px; border-radius: 3px; flex: 0 0 auto; background: var(--line-strong); }
+.log-text { min-width: 0; }
+
+/* ---------- Setup ------------------------------------------------------
+   Two questions — how many bots, how good — as segmented controls. No text
+   fields on the common path, so no keyboard, and the whole screen fits a
+   phone without scrolling. Hot seat and the replay seed sit behind "More
+   options".
+   --------------------------------------------------------------------- */
+.setup { display: block; }
+.setup-body {
+  max-width: 520px; margin: 12px auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-1);
+}
+.setup-title { font-size: 22px; }
+.setup-sub { margin: 4px 0 18px; color: var(--fg-muted); font-size: 13.5px; }
+
+.setup-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.field--seed { max-width: 200px; }
+.field-label {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--fg-muted); font-weight: 700;
+}
+.input {
+  font: inherit; font-size: 14px;
+  padding: 6px 9px;
+  color: var(--fg);
+  background: var(--bg-panel);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  min-width: 0; width: 100%;
+}
+
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+/* The setup segments are the primary control on the screen: full width, and
+   every option the same size so the row reads as a scale. */
+.seg--wide { display: flex; width: 100%; }
+.seg--wide .seg-btn { flex: 1 1 0; }
+.seg-btn {
+  font: inherit; font-size: 14px; font-weight: 650;
+  padding: 9px 13px; cursor: pointer;
+  background: var(--bg-panel); color: var(--fg-muted);
+  border: 0; border-right: 1px solid var(--line);
+}
+.seg-btn:last-child { border-right: 0; }
+.seg-btn.is-on { background: var(--accent); color: var(--accent-ink); }
+.seg-btn--off { opacity: .4; cursor: not-allowed; }
+
+.setup-actions { margin-top: 4px; display: grid; gap: 8px; }
+.btn--wide { width: 100%; }
+
+.setup-more { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
+.disclosure {
+  font: inherit; font-size: 13px; font-weight: 650;
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent; border: 0; color: var(--fg-muted);
+  padding: 6px 2px; cursor: pointer;
+}
+.disclosure:hover { color: var(--fg); }
+.disclosure-mark {
+  display: inline-grid; place-items: center;
+  width: 18px; height: 18px; border-radius: 5px;
+  background: var(--bg-sunken); border: 1px solid var(--line);
+  font-weight: 800; line-height: 1;
+}
+.setup-more-body { padding-top: 6px; }
+.hint { color: var(--fg-muted); font-size: 12.5px; margin: 6px 0 12px; }
+
+/* ---------- Overlays ---------------------------------------------------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 50;
+  display: grid; place-items: center;
+  padding: calc(16px + var(--safe-t)) calc(16px + var(--safe-r))
+           calc(16px + var(--safe-b)) calc(16px + var(--safe-l));
+  background: rgba(9, 14, 22, .55);
+  backdrop-filter: blur(2px);
+}
+.panel {
+  width: min(100%, 520px);
+  max-height: min(88vh, 760px);
+  /* vh counts the mobile URL bar as gone; dvh is the height actually on
+     screen, so the panel's own scrollbar is the one that moves. */
+  max-height: min(88dvh, 760px);
+  overflow: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-2);
+}
+.panel--wide { width: min(100%, 620px); }
+.panel h2 { font-size: 20px; }
+.panel-sub { margin: 5px 0 14px; color: var(--fg-muted); font-size: 13.5px; }
+.panel-h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-muted); margin: 12px 0 6px; }
+.panel-actions { display: flex; gap: 9px; margin-top: 16px; flex-wrap: wrap; }
+.tray { min-height: 40px; align-items: center; }
+
+.scores { width: 100%; border-collapse: collapse; font-size: 14px; }
+.scores th {
+  text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--fg-muted); padding: 4px 6px; border-bottom: 1px solid var(--line);
+}
+.scores td { padding: 7px 6px; border-bottom: 1px solid var(--line); }
+.scores td:first-child { width: 32px; }
+.scores .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+.scores .rank { font-weight: 800; color: var(--fg-muted); }
+.scores tr.is-winner td { background: var(--good-soft); }
+.scores tr.is-winner .rank { color: var(--good); }
+.scores td .seat { margin-right: 6px; vertical-align: -3px; }
+
+/* ---------- Update bar --------------------------------------------------
+   "A new version is ready." Pinned to the TOP, deliberately: the bottom of a
+   phone screen is the thumb zone where the action bar lives, and a bar that
+   appears under a finger mid-turn is how you buy a card you did not mean to.
+   Above the sheet (55) and the modal overlay (50) but below the skip link, and
+   it never covers the board's controls because it sits over the topbar strip.
+   ------------------------------------------------------------------------ */
+.updatebar {
+  position: fixed; z-index: 58;
+  left: 50%; top: calc(10px + var(--safe-t)); transform: translateX(-50%);
+  max-width: min(94vw, 460px);
+}
+.updatebar-inner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 8px 7px 14px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  box-shadow: var(--shadow-2);
+}
+.updatebar-text { font-size: 13.5px; font-weight: 650; white-space: nowrap; }
+.updatebar .btn { white-space: nowrap; }
+
+/* ---------- Toast ------------------------------------------------------- */
+.toast {
+  position: fixed; z-index: 60;
+  left: 50%; bottom: calc(18px + var(--safe-b)); transform: translateX(-50%) translateY(6px);
+  max-width: min(92vw, 460px);
+  background: var(--fg); color: var(--bg);
+  padding: 9px 16px; border-radius: 999px;
+  font-size: 13.5px; font-weight: 600;
+  box-shadow: var(--shadow-2);
+  opacity: 0;
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none;
+  text-align: center;
+}
+.toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ==================================================================
+   PHONES — a different layout, not a squeezed one.
+
+   Above 719px nothing below this line applies and the wide board is
+   exactly as it always was. Below it the page stops being a document
+   you scroll and becomes an app shell: one screen, no page scrolling,
+   with the twelve face-up cards taking every pixel the fixed furniture
+   does not need.
+
+     appbar     round · whose turn · menu
+     opponents  one strip, tap for the full panel
+     companies     one thin row of requirement pips
+     CARDS      the hero: 3 tier rows x (deck + 4 cards), all visible
+     you        your points, tokens, discounts, reserved cards
+     bank       piles + the contextual action bar, in the thumb zone
+
+   Seed, bot speed, the move log and New game live behind the menu.
+   ================================================================== */
+/* ---------- The board ---------------------------------------------------
+   This was the phone layout, inside `@media (max-width: 719px)`, overriding a
+   wide layout above it. There is no wide layout any more, so it is simply the
+   layout: it applies at every width, and .main caps and centres it so a big
+   screen shows the same board rather than a second design of it.
+   ---------------------------------------------------------------------- */
+html, body { height: 100%; }
+/* The page itself never scrolls. Regions that can overflow (a sheet, the
+   setup screen) scroll inside themselves instead. */
+body { overflow: hidden; }
+
+/* The header's four buttons cost a third of a 360px screen to say things
+   you look at once a game. The appbar and the menu replace it. */
+
+/* ONE BOARD, CAPPED AND CENTRED. The layout is built for a phone and stays
+   that shape everywhere: on a wide screen it is the same board in the middle
+   of the window rather than a second design stretched across it. The cap is a
+   little over the widest phone this is played on, so a handset is unaffected
+   and a laptop gets something that reads as the same app. */
+.main {
+  height: 100%;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.setup-body { margin: 10px; padding: 14px; }
+
+/* ---------- Title screen -------------------------------------------------
+   The first thing anyone sees. Name, mark, and the form under it — one screen,
+   no extra tap to get to a game.
+   ---------------------------------------------------------------------- */
+.title { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 2px 0 14px; }
+.title-mark { display: block; line-height: 0; }
+.title-name {
+  font-size: 27px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1;
+  margin: 6px 0 0; color: var(--fg);
+}
+.title-sub { margin: 0; font-size: 12.5px; color: var(--fg-muted); }
+/* Sits under Start game as its equal in width, below it in weight: the
+   default .btn face rather than the primary one, so the pair reads as one
+   obvious action and one offered alternative. */
+.setup-howto { font-weight: 650; }
+
+/* ---------- Confirm ------------------------------------------------------- */
+/* The destructive button is the one that does NOT look like the default. Red
+   is the signal; the primary fill stays on "Keep playing" so the safe option
+   is both the obvious one and the one under the thumb. */
+.btn--danger { border-color: var(--bad); color: var(--bad); background: transparent; }
+.btn--danger:hover { background: color-mix(in srgb, var(--bad) 14%, transparent); }
+.confirm-where {
+  margin: 0 0 16px; font-size: 13px; font-weight: 600; color: var(--fg-muted);
+  padding: 8px 10px; border-radius: 8px;
+  background: var(--bg-sunken); border: 1px solid var(--line);
+}
+.confirm-actions { display: grid; gap: 8px; }
+
+/* ---------- How to play --------------------------------------------------- */
+.rules-lede { margin: 0 0 12px; font-size: 13.5px; line-height: 1.45; color: var(--fg); }
+.rules-head {
+  margin: 14px 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--fg-muted);
+}
+.rule { margin: 0 0 9px; }
+.rule-title { margin: 0 0 1px; font-size: 13.5px; font-weight: 700; }
+.rule-body { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--fg-muted); }
+
+.game { height: 100%; overflow: hidden; }
+.game .board {
+  height: 100%;
+  display: flex; flex-direction: column;
+  gap: 5px;
+  padding: calc(4px + var(--safe-t)) calc(6px + var(--safe-r))
+           calc(4px + var(--safe-b)) calc(6px + var(--safe-l));
+}
+/* Panel chrome around every region is 4 borders and 20px of padding per
+   section. On a phone the regions are the layout; they do not need boxes. */
+.game .sec {
+  background: none; border: 0; border-radius: 0; padding: 0; min-width: 0;
+}
+.game .sec-title { display: none; }
+/* #players is left EMPTY rather than hidden (two nodes sharing a data-fk
+   would fight over focus), and the log is clipped rather than removed —
+   it is the aria-live region that narrates the bots' moves. */
+.game .side {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip-path: inset(50%); margin: -1px; padding: 0; border: 0;
+}
+
+/* ---------- App bar ---------- */
+.appbar { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.appbar-round {
+  display: inline-block; flex: 0 0 auto;
+  font-size: 12px; font-weight: 800; color: var(--fg-muted);
+  background: var(--bg-panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 4px 7px;
+}
+.appbar-round.is-hot { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+.game .status {
+  flex: 1 1 auto; min-width: 0;
+  background: none; border: 0; border-radius: 0; padding: 0;
+  position: static;
+}
+.game .status-hint,
+.game .status-note { display: none; }
+.game .status-main {
+  font-size: 15px; gap: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex;
+}
+.iconbtn {
+  flex: 0 0 auto;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  font: inherit; font-size: 20px; line-height: 1;
+  color: var(--fg); background: var(--bg-panel);
+  border: 1px solid var(--line); border-radius: 10px;
+  cursor: pointer;
+}
+
+/* ---------- Opponents ---------- */
+.oppstrip { flex: 0 0 auto; }
+.oppstrip-row { display: flex; gap: 5px; }
+.opp {
+  flex: 1 1 0; min-width: 0;
+  display: flex; align-items: center; gap: 5px;
+  min-height: 44px; padding: 4px 8px;
+  font: inherit; color: inherit; text-align: left;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.opp.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.opp.is-thinking { border-color: var(--warn); }
+.opp-name {
+  flex: 1 1 auto; min-width: 0;
+  font-size: 12.5px; font-weight: 650;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Cards bought, in a little card — the shared .hold-cards idiom, so the
+   opponent strip and your own rail say "cards" the same way. Points are the
+   number that decides the game; the card count is the number that predicts
+   it, and those two are all this strip is for. */
+.opp-pts { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.opp .dots { color: var(--warn); font-weight: 800; animation: pulse 1s ease-in-out infinite; }
+
+/* ---------- The turn report, in the beat popup ----------
+   The phone leaves #report empty and puts this card in #beat instead, so
+   the sizing has to be reachable from OUTSIDE .game — hence .beat-panel.
+
+   What does not carry over is the clipping. Inline, this had to be a fixed
+   two lines: a region that grew a line because a bot bought a four-colour
+   card would have resized the card grid under the player's thumb, and the
+   grid is the one thing on this screen that must not move. Floating over
+   the board it owes the grid nothing, so the action line wraps and says the
+   whole sentence — the first time it has been able to. */
+.report { flex: 0 0 auto; }
+.beat-panel .report-card { gap: 8px; padding: 8px 10px; border-radius: 12px; }
+.beat-panel .report-line { font-size: 13px; }
+.beat-panel .report-status { min-height: 30px; padding: 0 4px; }
+.beat-panel .report-chips { --gs: 18px; gap: 3px; justify-content: space-between; }
+.beat-panel .report-chips .hold-cards { min-width: 13px; height: 18px; font-size: 10px; border-top-width: 3px; }
+.beat-panel .report-chips .hold { flex: 0 1 auto; min-width: 0; }
+.beat-panel .report-pts { font-size: 16px; }
+.beat-panel .report-next { min-width: 64px; }
+
+/* ---------- Companies ---------- */
+.company-strip { display: flex; gap: 4px; align-items: stretch; }
+.companychip {
+  position: relative; overflow: hidden;
+  flex: 1 1 0; min-width: 0;
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 6px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-strong);
+  border-radius: 8px;
+}
+.companychip.is-met { border-left-color: var(--good); box-shadow: 0 0 0 2px var(--good-soft); }
+.companychip-pts { font-size: 14px; font-weight: 800; color: var(--accent); }
+.companychip .cost--company { flex-wrap: wrap; gap: 3px; }
+.companychip .pill { padding: 0 4px 0 1px; font-size: 11.5px; border-radius: 6px; }
+
+/* ---------- The cards ---------- */
+.sec--tiers { flex: 1 1 auto; min-height: 0; }
+.tiers { display: flex; flex-direction: column; gap: 5px; height: 100%; }
+/* 44px of deck rail, then four equal cards. Fixed columns, so a card is
+   always in the same place and nothing scrolls sideways. */
+.tier-row {
+  flex: 1 1 0; min-height: 0;
+  display: grid;
+  grid-template-columns: 44px repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.tile {
+  position: relative; overflow: hidden; min-width: 0; min-height: 0;
+  display: flex; flex-direction: column; justify-content: space-between;
+  gap: 3px; padding: 4px 4px 5px;
+  font: inherit; color: inherit; text-align: left;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--tier-c, var(--line-strong));
+  border-radius: 9px;
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+}
+.tile--t1 { --tier-c: var(--tier1); }
+.tile--t2 { --tier-c: var(--tier2); }
+.tile--t3 { --tier-c: var(--tier3); }
+/* "You can pay for this" — asked of YOUR purse on every turn, a bot's
+   included, so it does not blink out and back as the seat changes hands.
+   .is-buyable is the stronger claim (the move is legal right now). */
+.tile.is-affordable { border-color: var(--good); }
+.tile.is-buyable { border-color: var(--good); box-shadow: 0 0 0 2px var(--good-soft); }
+.tile[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow-2);
+  transform: translateY(-2px);
+}
+.tile--empty {
+  align-items: center; justify-content: center;
+  border-style: dashed; box-shadow: none; background: var(--bg-sunken);
+}
+.tile-art { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+/* The built-in look, when there is no illustration behind the tile: the
+   bonus resource as a big washed silhouette. Squared off, or a 71x180 tile
+   stretches it into an unrecognisable lozenge. */
+.tile .token-ghost { right: -10%; bottom: 3%; width: 66%; height: auto; aspect-ratio: 1; opacity: .14; }
+.tile-head { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 3px; }
+/* The reclaimed width and height go here. The point value is the number a
+   player reads first on every card, every turn; the cost tokens are what
+   they read second. Both grew when the letter glyph and the separate cost
+   numbers left. */
+.tile-points { font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
+.tile-bonus { display: inline-flex; }
+.cost--col { position: relative; flex-direction: column; gap: 1px; align-items: flex-start; }
+.cost--col .pill { padding: 0; }
+/* Deliberately NOT flagged red on a TILE. At the start of a game every
+   colour on every card is short, and twelve cards edged in red says
+   nothing. What a card costs is the pill's job; whether you can pay is the
+   green ring on the tile. */
+.cost--col .pill.is-short { border-color: transparent; background: none; }
+/* ...but the ACTION BAR is the one card you actually asked about, and there
+   the flag is the whole answer to "why is Buy grey". This rule used to be
+   suppressed along with the tiles, because .cost--col is both; the sentence
+   that was supposed to cover it ("Needs 1 Cinnamon") is sr-only, so a sighted
+   player on a phone had NO visible reason at all — the cost is shown after
+   discounts, so a card you cannot afford looks exactly like one you can, and
+   the only way to find out was to tap a button that looks dead. */
+.bar-text .cost--col .pill.is-short {
+  border-color: var(--bad); background: var(--bad-soft);
+  padding: 0 3px; border-radius: 6px;
+}
+/* A reserved card in the rail is a bookmark, not a card: points and the
+   bonus resource, and the full cost the moment you select it. Its pips would not
+   be readable at this size anyway, and pretending otherwise cost the rail
+   twice the height. */
+.tile--mini {
+  width: 48px; padding: 3px 4px; border-radius: 7px;
+  flex-direction: row; align-items: center; justify-content: center; gap: 3px;
+}
+.tile--mini .tile-head { flex-direction: row; align-items: center; gap: 3px; }
+.tile--mini .tile-points { font-size: 14px; }
+.tile--mini .cost--col { display: none; }
+.tile--reserved { border-style: dashed; border-top-style: solid; }
+
+.decktile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 0; min-height: 0; padding: 2px;
+  font: inherit; color: inherit;
+  background:
+    linear-gradient(var(--bg-sunken), var(--bg-sunken)) padding-box,
+    repeating-linear-gradient(135deg, var(--bg-raised) 0 6px, var(--bg-sunken) 6px 12px);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--tier-c, var(--line-strong));
+  border-radius: 9px;
+  cursor: pointer;
+}
+.decktile--t1 { --tier-c: var(--tier1); }
+.decktile--t2 { --tier-c: var(--tier2); }
+.decktile--t3 { --tier-c: var(--tier3); }
+.decktile[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+/* The deck column is narrow and TALL, so the name runs up it. A word that
+   would never fit across 40px fits easily along 116. */
+.decktile-tier {
+  font-size: 11px; font-weight: 800; color: var(--tier-c); letter-spacing: .06em;
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  text-transform: uppercase; white-space: nowrap;
+  max-height: 100%; overflow: hidden;
+}
+.decktile-count { font-size: 15px; font-weight: 800; line-height: 1; }
+
+/* ---------- Your rail ---------- */
+.you { flex: 0 0 auto; }
+.you-rail { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.you-me {
+  display: inline-flex; align-items: center; gap: 5px;
+  min-height: 44px; padding: 2px 9px 2px 5px;
+  font: inherit; color: inherit;
+  background: var(--bg-panel); border: 1px solid var(--line-strong);
+  border-radius: 999px; cursor: pointer;
+}
+.you-pts { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+/* Six chips, each carrying both of that colour's numbers. They share the
+   row's width equally so the tokens line up in a column-like scan, and
+   there is no capsule around them — the token IS the chip. */
+.you-chips { display: flex; gap: 3px; flex: 1 1 auto; min-width: 0; justify-content: space-between; }
+.you-chips .hold { flex: 0 1 auto; min-width: 0; }
+.you-reserved { display: flex; gap: 4px; }
+.you-reserved .tile { height: 44px; }
+
+/* ---------- Bank + action bar, in the thumb zone ---------- */
+.sec--bank { flex: 0 0 auto; }
+.game .bank-row {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px; padding: 0;
+}
+.game .pile {
+  flex-direction: row; justify-content: center; gap: 4px;
+  min-height: 48px; min-width: 0; padding: 4px 2px;
+  border-radius: 10px;
+}
+.game .pile-badge { top: -6px; right: -2px; padding: 0 5px; }
+
+.game .takebar {
+  margin-top: 5px; padding: 5px 6px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;
+  background: var(--bg-panel);
+  border-radius: 12px;
+}
+.bar-text { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.bar-title { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 750; }
+.bar-sub { font-size: 11.5px; line-height: 1.25; color: var(--fg-muted); }
+.bar-sub.is-ok { color: var(--good); font-weight: 700; }
+/* The selected card's cost lies along the bar rather than down it, and it is
+   the only thing in the bar besides the buttons — the SHORT readout that
+   used to sit under it (and push this bar to three lines on a four-colour
+   card) is gone. See cardActions() in render.js. */
+.bar-text .cost--col { flex-direction: row; flex-wrap: nowrap; }
+/* One line, whatever is selected: the card's identity, its points and its
+   cost lie along the bar instead of stacking. */
+.bar-text--card { flex-wrap: nowrap; }
+.bar-actions { flex: 0 0 auto; display: flex; gap: 5px; }
+/* Both dimensions, not just height: trimming the padding for the narrow
+   bar below took "Buy" down to 42px wide. */
+.bar-actions .btn { min-height: 44px; min-width: 44px; }
+.btn--icon { min-width: 44px; padding: 6px 10px; font-size: 15px; }
+
+/* The company chooser and the discard tray are modals shared with the wide
+   layout. Give the company choices the full width of the panel rather than a
+   sideways scroller: there are only ever two or three of them. */
+.panel .company-row { flex-wrap: wrap; }
+.panel .company { width: 100%; }
+.panel .scroller { overflow-x: visible; }
+
+/* ---------- Smaller phones ----------
+   Everything above is sized for a 412x915 handset. A 360x780 one has 13%
+   less width and 15% less height, and both of the things this pass made
+   bigger — the cost tokens and the holdings chips — are exactly what tips
+   over first: the rail wraps to a second line, and a tier III card's fourth
+   cost token falls off the bottom of its tile.
+
+   Because .token-svg fills its span, one --s override rescales every token in
+   a region. No markup changes, no second layout. */
+@media (max-width: 400px) {
+  .you-chips { --gs: 24px; }
+}
+/* Three rows of cards have to fit whatever height is left, and a tier III
+   card can want four cost tokens. Below ~820px of viewport there is not room
+   for four 22px tokens plus the point value, so the tokens step down. */
+@media (max-height: 830px) {
+  .cost--col { --gs: 19px; }
+  .tile-points { font-size: 23px; }
+}
+/* There used to be a second step-down here for a 360x780 handset, because
+   the turn report's two lines came out of this same budget and left a tier
+   III row only 117px to put four cost tokens in. The report is a popup now
+   (see .beat) and the row is 138px, so the tokens stay at the 19px above:
+   measured at 360x780, four tokens and the point value with 6px to spare. */
+
+/* The action bar stays ONE line at 360px with a four-colour card selected.
+   It only just does: the buttons give up their generous padding and the cost
+   tokens step down, while every target keeps its 44px minimum. */
+@media (max-width: 400px) {
+  .bar-text .cost--col { --gs: 20px; }
+  .bar-title { font-size: 12.5px; gap: 3px; }
+  .bar-actions { gap: 4px; }
+  .bar-actions .btn { padding: 6px 7px; font-size: 12.5px; }
+  .btn--icon { min-width: 44px; padding: 6px 6px; }
+}
+
+/* ---------- Toast clears the action bar ---------- */
+.toast { top: calc(56px + var(--safe-t)); bottom: auto; }
+
+/* ---------- The beat -----------------------------------------------------
+   The bots' turns, in front of the board. Sits UNDER .overlay (z 50) on
+   purpose: a discard tray, a company choice or the final standings are questions
+   and results, and they outrank a narration of what just happened.
+
+   Bottom-anchored, not centred. On a phone the press that carries the game on
+   should land where the thumb already is, and the board it would otherwise
+   collide with is covered.
+   ---------------------------------------------------------------------- */
+.beat { position: fixed; inset: 0; z-index: 45; }
+.beat-backdrop {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: calc(16px + var(--safe-t)) calc(12px + var(--safe-r))
+           calc(16px + var(--safe-b)) calc(12px + var(--safe-l));
+  /* The same scrim and blur as .overlay and .sheet-backdrop — this is the
+     app's one "something is in front of the board" treatment, not a third. */
+  background: rgba(9, 14, 22, .55);
+  backdrop-filter: blur(2px);
+  /* Fades IN, never out, and never per turn — the popup is inserted once per
+     run of bots. A fade is the opposite of a flash, which is the failure mode
+     that matters here; `prefers-reduced-motion` still turns it off. */
+  animation: beat-in 160ms ease-out;
+}
+.beat-panel { width: 100%; max-width: 460px; }
+.beat-panel .report-card { box-shadow: var(--shadow-2); }
+/* Mid-move. Muted, because it is the one card carrying no news yet. */
+.report-card--thinking { border-left-color: var(--line); }
+.report-card--thinking .report-name { font-weight: 650; }
+
+@keyframes beat-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .beat-backdrop { animation: none; }
+}
+/* Someone who has asked for less transparency gets a plain panel rather than
+   a blur — and the backdrop still has to READ as blocking, so it goes opaque
+   rather than simply losing the effect. */
+@media (prefers-reduced-transparency: reduce) {
+  .beat-backdrop { background: var(--bg); backdrop-filter: none; }
+}
+
+/* ---------- Bottom sheets ------------------------------------------------
+   The drawer everything non-per-turn went behind: the menu, the move log and
+   a player's full holdings. Only ever opened by the phone layout.
+   ---------------------------------------------------------------------- */
+.sheet { position: fixed; inset: 0; z-index: 55; }
+.sheet-backdrop {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-end;
+  background: rgba(9, 14, 22, .55);
+  backdrop-filter: blur(2px);
+}
+.sheet-panel {
+  width: 100%;
+  max-height: 84dvh;
+  overflow: auto;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--line);
+  border-radius: 16px 16px 0 0;
+  padding: 12px calc(12px + var(--safe-r)) calc(12px + var(--safe-b)) calc(12px + var(--safe-l));
+  box-shadow: var(--shadow-2);
+}
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sheet-title { font-size: 17px; }
+.sheet-meta { margin: 6px 0 10px; color: var(--fg-muted); font-size: 12.5px; }
+.sheet-body { padding-top: 8px; }
+.sheet-list { display: flex; flex-direction: column; gap: 6px; }
+.sheet-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; min-height: 52px; padding: 8px 12px;
+  font: inherit; color: inherit; text-align: left;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.sheet-item-label { font-size: 14.5px; font-weight: 650; }
+.sheet-item-value { font-size: 12.5px; color: var(--fg-muted); font-weight: 600; }
+.sheet-item[aria-pressed="true"] .sheet-item-value { color: var(--accent); }
+.sheet-item--danger .sheet-item-label { color: var(--bad); }
+.log--sheet { max-height: none; }
+
+/* ---------- Touch ---------------------------------------------------------
+   Fingers, not pointers. Two jobs: nothing may depend on hover, and every
+   target a turn goes through is at least 44x44 CSS px — the size a thumb can
+   actually hit. Measured, not assumed: the offenders were the card Buy /
+   Reserve pair, the deck's Reserve, the discard tray chips, the setup
+   Human/Bot segments and the form fields.
+   ------------------------------------------------------------------------ */
+@media (hover: none) {
+  .btn { min-height: 44px; padding: 8px 12px; }
+  .btn--small { font-size: 12.5px; padding: 8px 10px; }
+  .btn--big { min-height: 48px; }
+  /* flex-basis 0, not auto: sized by content, "Buy" came out 37px wide next
+     to "Reserve". Equal halves of the card put both over 44. */
+  .card-actions .btn { min-height: 44px; padding: 6px 4px; flex: 1 1 0; }
+  .skip-link { min-height: 44px; display: inline-flex; align-items: center; }
+  .deck .btn-deck { min-height: 44px; }
+  .seg-btn { min-height: 44px; padding: 10px 14px; }
+  .pile { min-height: 60px; }
+
+  /* Both halves of the discard dialog — the tokens you hold and the ones
+     queued to go back — are tapped repeatedly under time pressure. */
+  .chip--btn { min-height: 44px; min-width: 44px; justify-content: center; }
+  .chips--big .chip--btn { min-height: 48px; min-width: 48px; padding: 6px 13px 6px 8px; }
+
+  /* 16px is the threshold under which iOS Safari zooms the page on focus. */
+  .input { min-height: 44px; font-size: 16px; }
+
+  /* A row that has to scroll should at least come to rest on a whole card. */
+  .scroller { scroll-snap-type: x proximity; scroll-padding-left: 2px; }
+  .card, .deck, .company { scroll-snap-align: start; }
+}
+
+/* Buy and Reserve share one card's width, and "Reserve" cannot shrink below
+   its own text — which left "Buy" at 43px on a 122px card. Ten more pixels of
+   card is the cheapest way to get both halves over 44 without stacking them
+   and making every tier row a third taller. */
+@media (hover: none) and (max-width: 460px) {
+  .card { width: 132px; }
+  .card-actions { gap: 4px; }
+}
+
+/* ---------- Motion preferences ------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card:hover, .card:focus-within { transform: none; }
+}
+

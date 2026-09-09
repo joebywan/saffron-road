@@ -1,0 +1,116 @@
+<!doctype html><meta charset="utf-8"><title>Saffron Road — candidate token set</title>
+<!--
+  THE CANDIDATE SET FOR THE SAFFRON ROAD RESKIN.
+
+  Separate from tools/silhouette.html on purpose: that one checks the set that
+  actually ships, and it has to keep doing that while this one is in flux.
+
+  Two questions, deliberately never mixed:
+   1. LEGIBILITY. Can you read the count? It is white ink on a glyph-shaped
+      near-black halo, painted stroke-first, so it carries its own contrast
+      whatever is behind it. Judged in colour, on the real card background.
+   2. IDENTITY. Can you tell the six apart with colour gone? Judged as flat
+      black outlines. The count is knocked OUT for the worst case, but note
+      that state never ships - the silhouette the product draws behind card
+      art carries no count.
+
+  Everything renders at the size the phone actually draws it and is magnified
+  nearest-neighbour. No shape is flattered by being redrawn larger.
+-->
+<style>
+  body{font:14px/1.45 system-ui,sans-serif;background:#0f141c;color:#e6ebf2;margin:0;padding:22px 26px 50px}
+  h1{font-size:20px;margin:0 0 4px} h2{font-size:14px;margin:22px 0 6px;color:#9fb0c6;font-weight:650}
+  p{color:#8fa0b6;max-width:78ch;margin:3px 0 10px;font-size:13px}
+  .panel{background:#19202b;border:1px solid #2a3646;padding:14px 16px;border-radius:10px}
+  .cinnamon{background:#fff;padding:12px 16px;border-radius:10px}
+  .row{display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap}
+  .cell{text-align:center;font-size:10.5px;color:#8fa0b6}
+  .cinnamon .cell{color:#333}
+  .lab{margin-top:6px}
+  svg{display:block;margin:0 auto;image-rendering:pixelated}
+  .tile{width:71px;height:138px;border-radius:9px;background:#19202b;border:1px solid #2a3646;
+        border-top:3px solid #7c5cff;padding:4px 4px 5px;display:flex;flex-direction:column;justify-content:space-between}
+  .head{display:flex;justify-content:space-between;align-items:flex-start}
+  .pts{font-size:23px;font-weight:800;line-height:1;color:#e6ebf2}
+  .pips{display:flex;flex-direction:column;gap:1px;align-items:flex-start}
+  .zw{transform-origin:top left}
+</style>
+<h1>Saffron Road — the six, at pip size</h1>
+<p>Saffron is threads. The count's halo carries its own contrast, so line art is legible where a
+knocked-out silhouette suggested it would not be — and uncounted, three strokes is the most
+distinctive outline in the set.</p>
+<div id="out"></div>
+<script type="module">
+/* body, rim, ink-halo */
+const T = {
+  Saffron:  {c:['#D8551F','#B03A1A','rgba(46,3,7,.82)'],  num:{cx:12,cy:12,size:9.5},  line:true,
+    d:[['M7.5 4.5 Q11 12 9 19.5'],['M12 4 Q13.2 12 12 20'],['M16.5 4.5 Q13 12 15 19.5']]},
+  /* lifted well off near-pepper: at 19px on a dark tile the original read as a hole */
+  Pepper:   {c:['#8A8078','#463F39','rgba(20,17,15,.82)'], num:{cx:12,cy:12,size:9.5},
+    shape:'<circle cx="8.8" cy="9" r="5.1"/><circle cx="15.6" cy="10.4" r="5.1"/><circle cx="11.9" cy="16.4" r="5.1"/>'},
+  /* widened from 14.4 to 17.2 across so the digits stop touching the sides */
+  Cardamom: {c:['#7FA65C','#3F5B29','rgba(14,30,8,.82)'],  num:{cx:12,cy:12,size:10},
+    shape:'<path d="M12 2.2 Q20.6 12 12 21.8 Q3.4 12 12 2.2 Z"/>'},
+  /* squat and wide - the aspect ratio is what separates it from cinnamon */
+  Indigo:   {c:['#4A6BA5','#2F4A7C','rgba(6,16,36,.82)'],  num:{cx:12,cy:13.6,size:10.5},
+    shape:'<path d="M3.6 20.8 L20.4 20.8 L18.4 6.4 L5.6 6.4 Z"/>'},
+  /* narrow and tall - a rolled quill, not a second block */
+  Cinnamon: {c:['#A87340','#5E3B18','rgba(36,18,4,.82)'],  num:{cx:12,cy:12,size:9},
+    shape:'<rect x="7.2" y="3.6" width="9.6" height="17" rx="4.8"/>'},
+  Coin:     {c:['#D9A02B','#8C6212','rgba(40,26,2,.82)'],  num:{cx:12,cy:12,size:10.5},
+    shape:'<circle cx="12" cy="12" r="10.6"/>'},
+};
+const NAMES=Object.keys(T);
+function body(k,mode){
+  const t=T[k];
+  if(t.line){
+    const stroke = mode==='sil' ? 'currentColor' : t.c[0];
+    return `<g fill="none" stroke="${stroke}" stroke-width="2.6" stroke-linecap="round">`+
+      t.d.map(([p])=>`<path d="${p}"/>`).join('')+`</g>`;
+  }
+  return mode==='sil' ? t.shape
+    : `<g fill="${t.c[0]}" stroke="${t.c[1]}" stroke-width="1.2" stroke-linejoin="round">${t.shape}</g>`;
+}
+function numTag(k,count,ink,halo){
+  const n=T[k].num;
+  return `<text x="${n.cx}" y="${(n.cy+n.size*0.355).toFixed(2)}" font-size="${n.size}" font-weight="800"
+    text-anchor="middle" font-family="system-ui,sans-serif" style="paint-order:stroke"
+    stroke="${halo}" stroke-width="1.7" stroke-linejoin="round" fill="${ink}">${count}</text>`;
+}
+function colour(k,count,px){
+  return `<svg viewBox="0 0 24 24" width="${px}" height="${px}" style="width:${px}px;height:${px}px">
+    ${body(k,'col')}${count==null?'':numTag(k,count,'#fff',T[k].c[2])}</svg>`;
+}
+let uid=0;
+function sil(k,count,px){
+  const id='s'+(uid++), n=T[k].num;
+  const mask=count==null?'':
+   `<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+      <rect width="24" height="24" fill="#fff"/>${numTag(k,count,'#000','#000')}</mask>`;
+  return `<svg viewBox="0 0 24 24" width="${px}" height="${px}" style="width:${px}px;height:${px}px;fill:#000;color:#000">
+    ${mask}<g ${count==null?'':`mask="url(#${id})"`}>${body(k,'sil')}</g></svg>`;
+}
+const cell=(l,s)=>`<div class="cell">${s}<div class="lab">${l}</div></div>`;
+const out=[];
+const counts={Saffron:3,Pepper:5,Cardamom:3,Indigo:7,Cinnamon:2,Coin:4};
+out.push(`<h2>1. In colour on the card background — 19px, magnified 5×</h2><div class="panel"><div class="row">
+  ${NAMES.map(k=>cell(k,colour(k,counts[k],95))).join('')}</div></div>`);
+out.push(`<h2>2. The same six at their true 19px</h2><div class="panel"><div class="row">
+  ${NAMES.map(k=>cell(k,colour(k,counts[k],19))).join('')}</div></div>`);
+out.push(`<h2>3. Identity — flat black, uncounted. This is the state the product actually draws.</h2>
+ <div class="cinnamon"><div class="row">${NAMES.map(k=>cell(k,sil(k,null,95))).join('')}</div></div>`);
+out.push(`<h2>4. Identity, worst case — count knocked out. Harsher than anything that ships.</h2>
+ <div class="cinnamon"><div class="row">${NAMES.map(k=>cell(k,sil(k,counts[k],95))).join('')}</div></div>`);
+function tile(mag){
+  const pips=[['Saffron',3],['Pepper',5],['Cardamom',3],['Cinnamon',2]]
+    .map(([k,c])=>colour(k,c,19)).join('');
+  return `<div style="width:${71*mag}px;height:${138*mag}px;overflow:hidden">
+    <div class="zw" style="transform:scale(${mag})"><div class="tile">
+      <div class="head"><span class="pts">4</span></div><div class="pips">${pips}</div></div></div></div>`;
+}
+out.push(`<h2>5. A tier III card, four costs — actual size, then 3×</h2><div class="panel"><div class="row" style="align-items:flex-start">
+  ${cell('actual',tile(1))}<div style="width:20px"></div>${cell('3×',tile(3))}</div></div>`);
+out.push(`<h2>6. The bank row at 40px</h2><div class="panel"><div class="row">
+  ${NAMES.map(k=>cell(k,colour(k,7,40))).join('')}</div></div>`);
+document.getElementById('out').innerHTML=out.join('');
+</script>
