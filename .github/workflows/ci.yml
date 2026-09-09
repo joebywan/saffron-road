@@ -30,8 +30,17 @@ jobs:
       - name: Tests
         run: npm test
 
-      - name: Card and noble data invariants
+      - name: Card and company data invariants
         run: node src/data/verify.js
+
+      # The reskin renamed the game's whole vocabulary and was declared finished
+      # four times before it was. Every miss was invisible in a diff and broke no
+      # test: an iOS home-screen title, a tooltip, a section label read only by
+      # screen readers, and a move-log line naming a deck the way the board no
+      # longer did. "Remember to grep" is not a control; this is. See
+      # tools/vocabulary.js for the list and for what is deliberately not on it.
+      - name: Retired vocabulary has not come back
+        run: node tools/vocabulary.js
 
       # The service worker's version placeholder is the thing every delivery
       # path rewrites. If it is renamed, committed already-stamped, or loses

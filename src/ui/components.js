@@ -185,11 +185,11 @@ export function shortfallText(card, state, viewIndex) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Development cards                                                   */
+/* Holding cards                                                       */
 /* ------------------------------------------------------------------ */
 
 /**
- * A development card.
+ * A holding card.
  *
  * `readonly` renders a card nobody at this seat can act on — an opponent's
  * publicly reserved card. Its cost is then read through `costFor` (the
@@ -356,8 +356,8 @@ export function costColumn(card, state, viewIndex) {
  * a card's cost and your tokens. It was the widest thing on the narrowest bar
  * in the layout, and it was arithmetic the player is already doing by eye: the
  * card shows its cost after discounts, and their own tokens are in the rail
- * directly below it. It was also wrong-looking — it listed the gold you HOLD
- * inside a list headed "short", so it read as "short 1 gold" when gold is the
+ * directly below it. It was also wrong-looking — it listed the coins you HOLD
+ * inside a list headed "short", so it read as "short 1 coin" when a coin is the
  * wild that covers a shortfall.
  *
  * It is gone from the screen only. shortfallText() below still produces the
@@ -603,7 +603,7 @@ function pileState(token, ctx) {
   const usable = token !== 'coin' && ctx.interactive && (ctx.canAdd.has(token) || picked > 0);
   const reason =
     token === 'coin'
-      ? 'Gold is only gained by reserving a card'
+      ? 'Coins are only gained by reserving a card'
       : !ctx.interactive
         ? ctx.blockedReason
         : count === 0
@@ -617,7 +617,7 @@ function pileState(token, ctx) {
 }
 
 /**
- * One bank pile. Gold is display-only (you get it by reserving).
+ * One bank pile. The coin pile is display-only (you get one by reserving).
  */
 export function pileEl(token, ctx) {
   const st = pileState(token, ctx);
@@ -698,7 +698,7 @@ export function updatePile(btn, token, ctx) {
  */
 export function holdingChip(player, token, size = 22, tickKey = null) {
   const n = player.tokens[token] || 0;
-  // Gold is a wild; no card ever grants a gold discount, so that half of the
+  // A coin is a wild; no card ever grants a coin discount, so that half of the
   // chip does not exist rather than showing a permanent zero.
   const cards = token === 'coin' ? null : player.bonuses[token] || 0;
   return el(
@@ -756,7 +756,7 @@ export function playerPanel(player, ctx) {
         : active
           ? el('span', { class: 'turn-badge', text: 'to act' })
           : null,
-      el('span', { class: 'player-points', title: 'Prestige points' }, String(player.points), sr(' points')),
+      el('span', { class: 'player-points', title: 'Points' }, String(player.points), sr(' points')),
     ),
     el('div', { class: 'player-stats' },
       el('span', { class: 'stat' }, el('b', { text: String(player.cards.length) }), ' cards'),

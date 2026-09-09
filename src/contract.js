@@ -60,7 +60,7 @@ export const TOKEN_LABEL = {
   coin: 'Coin',
 };
 
-/** Starting bank per player count. Gold is always 5. */
+/** Starting bank per player count. Coins are always 5. */
 export const BANK_BY_PLAYERS = { 2: 4, 3: 5, 4: 7 };
 
 /** Companies in play = players + 1. */
@@ -81,12 +81,12 @@ export const TAKE2_MIN_PILE = 4;
  */
 
 /**
- * A development card.
+ * A holding card.
  * @typedef {object} Card
  * @property {string} id      Stable unique id, e.g. "t1-07".
  * @property {1|2|3} tier
  * @property {Resource} resource        The permanent bonus this card grants.
- * @property {number} points  Prestige points (0..5).
+ * @property {number} points  Points (0..5).
  * @property {Cost} cost      Token cost before bonuses.
  */
 
@@ -123,7 +123,7 @@ export const TAKE2_MIN_PILE = 4;
  *   count of face-down cards they hold, which is public information.
  *   Invariant: every non-null entry also appears in `reserved`.
  * @property {string[]} companies     Claimed company ids.
- * @property {number} points       Prestige points (cards + companies).
+ * @property {number} points       Points (cards + companies).
  */
 
 /**
@@ -174,7 +174,7 @@ export const TAKE2_MIN_PILE = 4;
  *
  * @typedef {{type:'reserve', cardId:string|null, tier:1|2|3|null}} Reserve
  *   Either cardId (a face-up card) or tier (blind draw from that deck top),
- *   never both. Gold is taken automatically when the bank has any.
+ *   never both. A coin is taken automatically when the bank has any.
  *
  * @typedef {{type:'discard', tokens:Purse}} Discard
  *   Tokens to return to the bank. Must bring the player to exactly TOKEN_LIMIT.
