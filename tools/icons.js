@@ -1,7 +1,7 @@
 /**
  * Generates every icon the app ships — the PWA set under icons/, and the
  * Android launcher icons under android/app/src/main/res/ — from the app's own
- * brilliant-cut diamond mark, the same geometry as the favicon in index.html.
+ * crocus mark, the same geometry as the favicon in index.html.
  *
  * No dependencies, and no binary assets checked in that nobody can regenerate:
  * this file rasterises the facets itself and writes the PNGs with node's

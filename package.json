@@ -9,7 +9,8 @@
     "test": "node --test test/*.test.js",
     "bundle": "node tools/bundle.js",
     "icons": "node tools/icons.js",
-    "apk": "bash android/apk.sh"
+    "apk": "bash android/apk.sh",
+    "screenshots": "node tools/screenshots.mjs"
   },
   "engines": {
     "node": ">=20"
