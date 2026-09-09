@@ -55,7 +55,7 @@ const TIERS = [1, 2, 3];
  *
  *   RESERVE_CLUTTER / RESERVE_ACCESS — by far the biggest. With reserves priced
  *     too cheaply the bot spends its first three turns reserving cards for the
- *     gold and never builds a tableau. Fixing this alone took 'normal' from
+ *     coins and never builds a tableau. Fixing this alone took 'normal' from
  *     62% to 93% against 'easy'.
  *   OPP — raising it to 1.0 (a true zero-sum differential: my position minus
  *     the best opponent's) was worth about 25 percentage points head to head.
@@ -102,7 +102,7 @@ export const W = {
   /* --- tokens ------------------------------------------------------ */
   /** Value of one "unit" of token holding. */
   TOKEN: 8,
-  /** Gold is a wild, worth more than a coloured token. */
+  /** A coin is a wild, worth more than a coloured token. */
   GOLD_MULT: 1.45,
   /** After this many of one colour, extra copies are mostly dead weight. */
   TOKEN_SOFT_CAP: 3,
@@ -127,7 +127,7 @@ export const W = {
   /** Flat credit for holding any reserved card at all (optionality + a wild). */
   RESERVE_BASE: 10,
   /** Flat penalty PER reserved card. Reserving burns a whole turn for one
-   *  gold, so this has to be big enough to stop the bot hoarding reserves. */
+   *  coins, so this has to be big enough to stop the bot hoarding reserves. */
   RESERVE_CLUTTER: 40,
 
   /* --- opponents ---------------------------------------------------- */

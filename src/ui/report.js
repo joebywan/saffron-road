@@ -97,7 +97,7 @@ export function buildTurnReport(before, after, actor, moves) {
           // Face-up reserves happened in the open, so the card is public. A
           // blind draw is not, and is not looked up here at all.
           card: blind ? null : getCard(m.cardId),
-          // The engine takes a gold whenever the bank has one.
+          // The engine takes a coin whenever the bank has one.
           coin: before.bank.coin > 0,
         });
         break;

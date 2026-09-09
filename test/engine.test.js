@@ -385,7 +385,7 @@ test('buy: exact resources, tokens go back to the bank', () => {
   assert.equal(next.log.at(-1).text, 'Ada bought Pepper (1pts) for 3 indigo');
 });
 
-test('buy: gold covers the shortfall', () => {
+test('buy: a coin covers the shortfall', () => {
   const s = buyFixture({ indigo: 3 }, { tokens: { indigo: 1, coin: 2 } });
   const aff = affordability(s, 0, getCard('x-1'));
   assert.equal(aff.affordable, true);
@@ -466,7 +466,7 @@ test('board: slot becomes null and stays null once the deck is dry', () => {
 /* Reserving                                                           */
 /* ------------------------------------------------------------------ */
 
-test('reserve: face-up card, gold granted, slot refilled', () => {
+test('reserve: face-up card, coin granted, slot refilled', () => {
   const s = game(2);
   const target = s.board[2][1];
   const nextUp = s.decks[2][0];
@@ -478,7 +478,7 @@ test('reserve: face-up card, gold granted, slot refilled', () => {
   assert.match(next.log.at(-1).text, /reserved .* and took a coin/);
 });
 
-test('reserve: still happens when the bank has no gold', () => {
+test('reserve: still happens when the bank has no coins', () => {
   const s = game(2);
   s.bank.coin = 0;
   const target = s.board[1][0];
@@ -793,7 +793,10 @@ test('reserving face up leaves the card visible to every opponent', () => {
     const view = redactFor(s, observer);
     assert.deepEqual(view.players[0].reserved, [target], `visible to p${observer}`);
   }
-  assert.match(s.log.at(-1).text, /from tier 2/);
+  // The log names the DECK, and it names it the way the board does — this
+  // string is rendered to the player in the move log, so "tier 2" here would
+  // be the same deck called two different things on one screen.
+  assert.match(s.log.at(-1).text, /from the Warehouses/);
 });
 
 test('reserving blind hides the card from opponents but not from its owner', () => {

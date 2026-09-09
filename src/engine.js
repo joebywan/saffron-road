@@ -23,7 +23,7 @@
  * @typedef {import('./contract.js').LogEntry} LogEntry
  */
 
-import { RESOURCES, TOKENS, TOKEN_LABEL, BANK_BY_PLAYERS, COMPANIES_BY_PLAYERS, COIN_COUNT, CARDS_PER_ROW, MAX_RESERVED, TOKEN_LIMIT, WIN_POINTS, TAKE2_MIN_PILE, emptyPurse, emptyCost, total, inResourceOrder } from './contract.js';
+import { RESOURCES, TOKENS, TOKEN_LABEL, DECK_LABEL, DECK_LABEL_ONE, BANK_BY_PLAYERS, COMPANIES_BY_PLAYERS, COIN_COUNT, CARDS_PER_ROW, MAX_RESERVED, TOKEN_LIMIT, WIN_POINTS, TAKE2_MIN_PILE, emptyPurse, emptyCost, total, inResourceOrder } from './contract.js';
 import { shuffle } from './rng.js';
 import { CARDS } from './data/cards.js';
 import { COMPANIES } from './data/companies.js';
@@ -264,10 +264,10 @@ export function createGame({ players, seed, cards = CARDS, companies = COMPANIES
 /* ------------------------------------------------------------------ */
 
 /**
- * What `playerIndex` would actually pay for `card`: resources first, gold only for
+ * What `playerIndex` would actually pay for `card`: resources first, coins only for
  * the shortfall. `pay` is what leaves their hand (it is capped by what they
  * hold, so it is meaningful even when unaffordable); `shortfall` is how much
- * gold the purchase needs.
+ * coin the purchase needs.
  *
  * @param {GameState} state
  * @param {number} playerIndex
@@ -689,9 +689,13 @@ export function applyMove(state, move) {
         p.tokens.coin += 1;
         gotCoin = true;
       }
+      // Through DECK_LABEL, because this string IS SHOWN TO THE PLAYER: the
+      // Move log renders entry.text more or less verbatim. It said "tier 3"
+      // while the board said "Routes" — the same deck named two ways to the
+      // same person, which is the exact failure the deck labels exist to stop.
       const what = blind
-        ? `the top card of tier ${tier}, unseen`
-        : `${cardLabel(getCard(cardId))} from tier ${tier}`;
+        ? `the top ${DECK_LABEL_ONE[tier]}, unseen`
+        : `${cardLabel(getCard(cardId))} from the ${DECK_LABEL[tier]}`;
       log(
         s,
         idx,

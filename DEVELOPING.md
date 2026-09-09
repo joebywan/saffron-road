@@ -376,24 +376,24 @@ worse than no screenshot.
 
 ## Card data
 
-`src/data/cards.js` holds the **authentic printed deck**, not an approximation. It was
-transcribed by cross-checking four mutually independent published encodings — a 2015 Prolog
-dataset, a 2016 JSON one, a 2017 Ruby one, and a CSV — which normalise to byte-identical
-tuples across all 90 cards. One widely-copied dataset was **rejected**: it disagrees on 46 of
-90 cards, and its own header claims a cross-verification that does not hold.
+The 90 card costs in `src/data/cards.js` are **transcribed, not invented, and not free to
+edit**. They were cross-verified across four mutually independent encodings that agree on
+every card exactly, out of roughly thirteen independent origins in the same agreement set.
+A fifth was rejected as an outlier: it disagreed on 46 of the 90, is not a colour
+permutation of the others, and its own claim to have been cross-verified does not hold.
 
-Three things about the real deck that commonly-repeated summaries get wrong, all confirmed
-against every independent source and asserted in `verify.js`:
+If a cost here looks wrong, it is far likelier to be right. Three things that commonly-
+repeated summaries get wrong, all asserted in `verify.js`:
 
 - Total card points are **140**, not 145. The per-colour Warehouse point spread is 1,1,2,2,2,3.
 - **Six Caravan cards do cost their own bonus colour.** It is not true that they never do.
 - The Route cards costing **7 of a single colour are the 4-point ones**. The 5-point cards
   cost 7 of one colour *plus* 3 of another.
 
-The ten **company** requirement sets are likewise the unanimous consensus of six independent
-sources, and the set is perfectly balanced: each resource is wanted by exactly five tiles.
-The company names are this game's own and are pure flavour — change them freely. The
-requirement rows are the verified part and should not move.
+The ten **company** requirement rows are likewise a unanimous consensus across six
+encodings, and the set is perfectly balanced: each resource is wanted by exactly five tiles.
+`verify.js` asserts that balance, so an edit fails the build rather than quietly skewing the
+game. The company names are this game's own and are pure flavour — change them freely.
 
 Run `node src/data/verify.js` to re-check the whole dataset.
 
@@ -410,9 +410,11 @@ the stone any more; that pairing cost two elements of width in the dozens of pla
 appears, and the width it gave back went into the cards.
 
 **Colour is never the only cue, and the words are not the cue at all.** With the letter
-gone, the redundant non-colour cue is the *silhouette*: six deliberately different outlines
-— pointed brilliant, tall oval, narrow step bar, rounded square, wide flat bar, circle —
-which stay tellable apart as flat black shapes with the digits knocked out of them.
+gone, the redundant non-colour cue is the *silhouette*: six deliberately different outlines,
+one per good plus the coin, which stay tellable apart as flat black shapes with the digits
+knocked out of them. They are not variations on one form — saffron is loose threads and
+pepper is three separate corns — because a set of near-identical outlines is a set that
+fails exactly this test.
 `tools/silhouette.html` is that check, at the sizes the app actually draws, magnified to
 the real pixels; `TOKEN_NUMBER` in `src/ui/tokens.js` is where each cut says how much of its
 body a number may use. The digit's contrast is not left to the facet it lands on either:

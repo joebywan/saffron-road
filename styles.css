@@ -93,7 +93,7 @@
     --shadow-2: 0 2px 6px rgba(0, 0, 0, .45), 0 12px 28px rgba(0, 0, 0, .4);
 
     /* Same tokens, lit for a dark page: the shadow end lifts so faces do
-       not collapse into the panel, and onyx swaps to a pale rim — a black
+       not collapse into the panel, and pepper swaps to a pale rim — a black
        token on a near-black panel is the one case colour cannot carry. */
     --token-cinnamon-hi: #e9dccf; --token-cinnamon-lite: #cbac8e; --token-cinnamon-fill: #b18153;
     --token-cinnamon-dark: #8a6541; --token-cinnamon-deep: #664b30; --token-cinnamon-stroke: #503a25;
@@ -459,7 +459,7 @@ h1, h2, h3 { margin: 0; font-weight: 700; line-height: 1.2; }
   color: var(--fg-muted); font-weight: 600; font-style: italic;
 }
 
-/* ---------- Development cards ------------------------------------- */
+/* ---------- Holding cards ----------------------------------------- */
 .tiers { display: flex; flex-direction: column; gap: 10px; }
 .tier { min-width: 0; }
 .card-row { display: flex; gap: 9px; align-items: stretch; padding: 2px; }
@@ -655,7 +655,7 @@ h1, h2, h3 { margin: 0; font-weight: 700; line-height: 1.2; }
   box-shadow: var(--shadow-1);
 }
 .pile.is-off { opacity: .38; cursor: not-allowed; filter: grayscale(.55); }
-/* Gold is the one pile that is NEVER takeable — you get it by reserving — so
+/* The coin pile is the one that is NEVER takeable — you get one by reserving — so
    its "off" state is permanent rather than a passing condition. Greying it
    the same way as a temporarily-empty pile left the wild token looking dead
    for the whole game. It still reads as unavailable (dimmed, not-allowed,
