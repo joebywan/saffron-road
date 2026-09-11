@@ -416,7 +416,7 @@ dependencies {
      * The BOM drags jdk7/jdk8 up to 1.8.22 too, where they are empty shims
      * that only depend on the main stdlib.
      */
-    implementation platform('org.jetbrains.kotlin:kotlin-bom:2.4.10')
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:2.4.20')
 
     // WebViewAssetLoader + ServiceWorkerControllerCompat + the dark-mode
     // settings shim. This is the whole reason androidx.webkit is here.
