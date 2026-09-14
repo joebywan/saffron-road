@@ -87,7 +87,7 @@ jobs:
       # 8.0 onward wants a 17 JDK, and it is still the minimum at AGP 9.4.
       # Gradle 9.7's own ceiling moved when the wrapper did; the plugin's
       # floor did not, and the floor is what pins this.
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
           distribution: temurin
           java-version: '17'
