@@ -87,13 +87,13 @@ jobs:
       # 8.0 onward wants a 17 JDK, and it is still the minimum at AGP 9.4.
       # Gradle 9.7's own ceiling moved when the wrapper did; the plugin's
       # floor did not, and the floor is what pins this.
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
 
-      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4
+      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
 
       # No -PappVersion and no tags in the checkout, so the build falls back to
       # 0.0.0-dev. That is the point: this asks whether the build works, and
