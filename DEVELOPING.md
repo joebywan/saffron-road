@@ -19,8 +19,8 @@ seed is behind **More options**; turn pacing, the move log, all players and New 
 the in-game menu.
 
 **One human, always.** A game is you plus one to three bots, and the board is drawn from
-your seat and only your seat: card costs carry *your* discounts and the rail carries *your*
-tokens on every turn, including while a bot is moving. Whose turn it is is said in the turn
+your seat and only your seat: costs are measured against *your* holdings and the rail
+carries *your* tokens on every turn, including while a bot is moving. Whose turn it is is said in the turn
 indicator and narrated in the move log — the board is never reinterpreted around you. (The
 engine itself is unchanged and still seats any mix of humans and bots; `src/ui/seat.js` is
 where the UI pins itself to one of them.)

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "A trading game that runs in the browser, with bot opponents. No build step.",
+  "description": "A trading game for the phone, against one to three bots. Android app with no internet permission; also runs in any browser.",
   "scripts": {
     "start": "node tools/serve.js",
     "test": "node --test test/*.test.js",

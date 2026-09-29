@@ -52,18 +52,19 @@ The three decks are the same idea at three prices. **Caravans** are cheap and
 rarely score. **Warehouses** sit in the middle. **Routes** are expensive and
 carry the points. You climb from one to the next.
 
-Coins are wild and cover anything. Reserving is the only way to get one.
+Coins are wild and cover anything. Reserving is the only way to get one, and
+only while the bank has one left.
 
 ### Companies sign on their own
 
 Each company wants a number of holdings producing particular goods. Meet its
-requirements and it signs with you at the end of your turn, worth points. You
-never spend anything on a company and you cannot decline one — though when
-several qualify at once, you choose which.
+requirements and it signs with you at the end of your turn, worth 3 points. You
+never spend anything on a company and you cannot decline one. At most one signs
+per turn — when several qualify at once, you choose which, and the others wait.
 
 ### Reserving, and who sees what
 
-This one catches people, and it is a real rule rather than a UI choice:
+A real rule rather than a UI choice:
 
 - Reserve a card **from the table** and everyone saw you take it. It stays
   visible in your hand for the rest of the game.
@@ -84,11 +85,17 @@ only that they have *something*.
 
 ## Bots
 
-One human, always — you plus one to three bots, at easy, normal or hard. The
-board is drawn from your seat and only your seat: card costs carry *your*
-discounts on every turn, including while a bot is moving, so the board is never
-reinterpreted around you. Whose turn it is is said in the turn indicator and
-narrated in the move log.
+One human, always — you plus one to three bots, at easy, normal or hard.
+
+The board is drawn from your seat and only your seat, on every turn, including
+while a bot is moving. Card costs are shown as printed and never change; the
+colours your holdings already cover are dimmed, and a colour you cannot afford
+is marked. The app never does the subtraction for you behind your back.
+
+When the bots move, a turn report opens once and steps through each of them:
+what they did and where it left them. By default it waits for you to press
+Next; the in-game menu switches it to Normal or Fast. The move log keeps the
+whole game.
 
 Bots cannot cheat. They are handed a redacted view with the deck order stripped
 and opponents' blind-drawn reserves hidden — the same view you have.
@@ -100,4 +107,5 @@ and opponents' blind-drawn reserves hidden — the same view you have.
 - [DEVELOPING.md](DEVELOPING.md) — how the project is put together, how
   releases work, and why the UI is the way it is.
 
-No build step, no dependencies, no framework. Plain ES modules.
+The game itself is plain ES modules: no framework, no npm dependencies, no
+build step. The Android app is a single WebView around it.
