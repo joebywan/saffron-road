@@ -310,10 +310,10 @@ export function cardEl(card, ctx, opts = {}) {
 
 /**
  * The cost of `card` as a column of pips, the way the printed card carries it.
- * Only what is still OWED after this player's discounts appears: a covered
- * colour is not a cost any more, and on a 71px-wide tile a struck-through zero
- * is three characters of noise. `.is-short` marks a colour the player cannot
- * currently cover, so what is missing is visible without reading a word.
+ * Every colour shows its PRINTED number, never what is owed after discounts;
+ * `.is-covered` dims a colour this player's cards fully cover, and `.is-short`
+ * marks one they cannot currently pay, so what is missing is visible without
+ * reading a word. The subtraction is the player's, as in costPills.
  */
 export function costColumn(card, state, viewIndex) {
   const p = state.players[viewIndex];
