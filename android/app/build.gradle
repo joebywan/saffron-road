@@ -420,7 +420,7 @@ dependencies {
 
     // WebViewAssetLoader + ServiceWorkerControllerCompat + the dark-mode
     // settings shim. This is the whole reason androidx.webkit is here.
-    implementation 'androidx.webkit:webkit:1.17.0'
+    implementation 'androidx.webkit:webkit:1.17.1'
     // ComponentActivity, for OnBackPressedDispatcher — the only back handling
     // that still fires once predictive back is on by default (targetSdk 36).
     implementation 'androidx.activity:activity:1.13.0'
