@@ -982,7 +982,6 @@ function statusBar(ctx) {
         el('span', { class: `seat seat--${who.index}`, 'aria-hidden': 'true', text: String(who.index + 1) }),
         who.index === HUMAN_SEAT ? 'You moved' : `${who.name} moved`),
       el('span', { class: 'status-hint', text: 'Take it in, then press Next.' }),
-      el('span', { class: 'status-note', text: 'Costs shown with your card discounts' }),
     ];
   }
   if (state.phase === 'gameover') {
@@ -1028,8 +1027,6 @@ function statusBar(ctx) {
       el('span', { class: `seat seat--${state.current}`, 'aria-hidden': 'true', text: String(state.current + 1) }),
       who),
     el('span', { class: 'status-hint', text: hint }),
-    // Always yours, whoever is to act. That is the point of the fixed seat.
-    el('span', { class: 'status-note', text: 'Costs shown with your card discounts' }),
   ];
 }
 
