@@ -22,7 +22,7 @@ jobs:
           # including a Gradle build running third-party plugin code.
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '20'
 
@@ -79,7 +79,7 @@ jobs:
       # SKIPS ITSELF when it is absent rather than failing the build. Set up
       # Java first and node is still missing when Gradle configures, so the
       # check quietly no-ops and this job proves less than it appears to.
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '20'
 
@@ -87,7 +87,7 @@ jobs:
       # 8.0 onward wants a 17 JDK, and it is still the minimum at AGP 9.4.
       # Gradle 9.7's own ceiling moved when the wrapper did; the plugin's
       # floor did not, and the floor is what pins this.
-      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
         with:
           distribution: temurin
           java-version: '17'
